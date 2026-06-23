@@ -1,10 +1,10 @@
 /**
- * @fileoverview 控制台日志模块
- * @description 提供带时间戳/级别/模块名的彩色日志输出，并支持通过环境变量控制日志等级。
+ * @fileoverview 控制台日志模塊
+ * @description 提供帶時間戳/級別/模塊名的彩色日誌輸出，並支援通過環境變數控制日誌級別。
  *
- * - 环境变量：LOG_LEVEL=debug|info|warn|error
- * - 输出格式：YYYY-MM-DD HH:mm:ss.SSS [LEVEL] [模块] 消息 | k=v ...
- * - 日志文件：data/logs/system.log（超过 5MB 自动轮转）
+ * - 環境變數：LOG_LEVEL=debug|info|warn|error
+ * - 輸出格式：YYYY-MM-DD HH:mm:ss.SSS [LEVEL] [模塊] 消息 | k=v ...
+ * - 日誌文件：data/logs/system.log（超過 5MB 自動輪轉）
  */
 
 import process from 'process';
@@ -13,7 +13,7 @@ import path from 'path';
 
 const LEVELS = ['debug', 'info', 'warn', 'error'];
 
-// ANSI 颜色代码
+// ANSI 顏色代碼
 const COLORS = {
     reset: '\x1b[0m',
     red: '\x1b[31m',
@@ -22,50 +22,50 @@ const COLORS = {
     white: '\x1b[37m'
 };
 
-// 日志文件配置
+// 日誌文件配置
 const LOG_DIR = path.join(process.cwd(), 'data', 'logs');
 const LOG_FILE = path.join(LOG_DIR, 'system.log');
 const LOG_FILE_OLD = path.join(LOG_DIR, 'system.log.old');
 const MAX_LOG_SIZE = 5 * 1024 * 1024; // 5MB
 
-// 确保日志目录存在
+// 確保日誌目錄存在
 function ensureLogDir() {
     if (!fs.existsSync(LOG_DIR)) {
         fs.mkdirSync(LOG_DIR, { recursive: true });
     }
 }
 
-// 日志轮转：超过 5MB 时重命名为 .old
+// 日誌輪轉：超過 5MB 時重命名為 .old
 function rotateLogIfNeeded() {
     try {
         if (fs.existsSync(LOG_FILE)) {
             const stats = fs.statSync(LOG_FILE);
             if (stats.size >= MAX_LOG_SIZE) {
-                // 删除旧的 .old 文件
+                // 删除舊的 .old 文件
                 if (fs.existsSync(LOG_FILE_OLD)) {
                     fs.unlinkSync(LOG_FILE_OLD);
                 }
-                // 重命名当前日志
+                // 重命名當前日誌
                 fs.renameSync(LOG_FILE, LOG_FILE_OLD);
             }
         }
     } catch (e) {
-        // 忽略轮转错误
+        // 忽略輪轉錯誤
     }
 }
 
-// 写入日志文件
+// 寫入日誌文件
 function writeToFile(line) {
     try {
         ensureLogDir();
         rotateLogIfNeeded();
         fs.appendFileSync(LOG_FILE, line + '\n', 'utf8');
     } catch (e) {
-        // 忽略写入错误
+        // 忽略寫入錯誤
     }
 }
 
-// 根据日志级别获取颜色
+// 根據日誌級別獲取顏色
 function getColor(level) {
     switch (level.toLowerCase()) {
         case 'error':
@@ -106,13 +106,13 @@ function shouldLog(level) {
     const envIndex = LEVELS.indexOf(currentLogLevel);
     const targetIndex = LEVELS.indexOf(targetLevel);
 
-    // If env level is invalid, default to info (index 1)
+    // 如果環境級別無效，預設為 info (index 1)
     const effectiveEnvIndex = envIndex === -1 ? 1 : envIndex;
 
     return targetIndex >= effectiveEnvIndex;
 }
 
-// 需要提取到前面用方括号显示的 meta 字段
+// 需要提取到前面用方括號顯示的 meta 字段
 const FRONT_META_KEYS = ['id', 'adapter', 'model'];
 
 export function log(level, mod, msg, meta = {}) {
@@ -122,10 +122,10 @@ export function log(level, mod, msg, meta = {}) {
     const levelMap = { debug: 'DBUG', info: 'INFO', warn: 'WARN', error: 'ERRO' };
     const levelTag = levelMap[level.toLowerCase()] || level.toUpperCase().slice(0, 4);
 
-    // 将消息中的换行符替换为 ↵ 符号，保持日志为单行
+    // 將消息中的換行符替換為 ↵ 符號，保持日誌為單行
     const sanitizedMsg = msg.replace(/\r?\n/g, ' ↵ ');
 
-    // 提取关键字段放在前面用方括号显示
+    // 提取關鍵字段放在前面用方括號顯示
     const frontParts = [];
     const remainingMeta = {};
     for (const [k, v] of Object.entries(meta)) {
@@ -159,7 +159,7 @@ export function log(level, mod, msg, meta = {}) {
     const color = getColor(level);
     const coloredLine = `${color}${line}${COLORS.reset}`;
 
-    // 输出到控制台
+    // 輸出到控制台
     if (level === 'error') {
         console.error(coloredLine);
     } else if (level === 'warn') {
@@ -168,7 +168,7 @@ export function log(level, mod, msg, meta = {}) {
         console.log(coloredLine);
     }
 
-    // 写入日志文件（不带颜色）
+    // 寫入日誌文件（不帶顏色）
     writeToFile(line);
 }
 

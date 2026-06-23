@@ -1,13 +1,13 @@
 /**
- * @fileoverview 运行环境初始化脚本（CLI）
- * @description 用于下载/准备运行所需依赖（如 Camoufox、better-sqlite3 等）。
+ * @fileoverview 運行環境初始化腳本（CLI）
+ * @description 用於下載/準備運行所需依賴（如 Camoufox、better-sqlite3 等）。
  *
  * 用法：
- *   npm run init                     # 自动初始化（无代理）
- *   npm run init -- -proxy           # 自动初始化（交互式输入代理）
+ *   npm run init                     # 自動初始化（無代理）
+ *   npm run init -- -proxy           # 自動初始化（互動式輸入代理）
  *   npm run init -- -proxy=http://127.0.0.1:7890
  *   npm run init -- -proxy=socks5://user:pass@127.0.0.1:1080
- *   npm run init -- -custom          # 自定义模式
+ *   npm run init -- -custom          # 自定義模式
  */
 
 import fs from 'fs';
@@ -27,11 +27,11 @@ const PROJECT_ROOT = path.join(__dirname, '..');
 const TEMP_DIR = path.join(PROJECT_ROOT, 'data', 'temp');
 
 /**
- * 解析命令行代理参数
+ * 解析命令列代理參數
  * @returns {Promise<string|null>} 代理 URL
  */
 async function parseProxyArg() {
-    // 查找 -proxy 或 -proxy=xxx 参数
+    // 查找 -proxy 或 -proxy=xxx 參數
     const proxyArg = process.argv.find(arg => arg.startsWith('-proxy'));
 
     if (!proxyArg) {
@@ -47,11 +47,11 @@ async function parseProxyArg() {
         }
     }
 
-    // -proxy 不带参数，交互式输入
-    logger.info('初始化', '请输入代理配置...');
+    // -proxy 不帶參數，互動式輸入
+    logger.info('初始化', '請輸入代理配置...');
 
     const proxyType = await select({
-        message: '代理类型',
+        message: '代理類型',
         choices: [
             { name: 'HTTP', value: 'http' },
             { name: 'SOCKS5', value: 'socks5' }
@@ -59,29 +59,29 @@ async function parseProxyArg() {
     });
 
     const host = await input({
-        message: '代理服务器地址',
+        message: '代理伺服器地址',
         default: '127.0.0.1',
-        validate: (val) => val.trim().length > 0 || '地址不能为空'
+        validate: (val) => val.trim().length > 0 || '地址不能為空'
     });
 
     const port = await input({
-        message: '代理端口',
+        message: '代理埠號',
         default: '7890',
         validate: (val) => {
             const num = parseInt(val, 10);
-            return (num > 0 && num <= 65535) || '端口必须是 1-65535 的数字';
+            return (num > 0 && num <= 65535) || '埠號必須是 1-65535 的數字';
         }
     });
 
     const username = await input({
-        message: '用户名 (可选，回车跳过)',
+        message: '用戶名 (可選，回車跳過)',
     });
 
     const password = await input({
-        message: '密码 (可选，回车跳过)',
+        message: '密碼 (可選，回車跳過)',
     });
 
-    // 构建代理 URL
+    // 構建代理 URL
     let proxyUrl = `${proxyType}://`;
     if (username && password) {
         proxyUrl += `${encodeURIComponent(username)}:${encodeURIComponent(password)}@`;
@@ -94,20 +94,20 @@ async function parseProxyArg() {
     return proxyUrl;
 }
 
-// 确保临时目录存在
+// 確保臨時目錄存在
 if (!fs.existsSync(TEMP_DIR)) {
     fs.mkdirSync(TEMP_DIR, { recursive: true });
 }
 
 /**
- * 获取 Node.js ABI 版本
+ * 獲取 Node.js ABI 版本
  */
 function getNodeABI() {
     return process.versions.modules;
 }
 
 /**
- * 获取平台信息
+ * 獲取平台資訊
  */
 function getPlatformInfo() {
     const platform = os.platform();
@@ -119,7 +119,7 @@ function getPlatformInfo() {
 }
 
 /**
- * 验证平台支持
+ * 驗證平台支援
  */
 function validatePlatform(platform, arch) {
     const supported = {
@@ -136,7 +136,7 @@ function validatePlatform(platform, arch) {
 }
 
 /**
- * 验证 Node.js ABI 版本支持
+ * 驗證 Node.js ABI 版本支援
  */
 function validateABI(abi) {
     const supportedABIs = [115, 121, 123, 125, 127, 128, 130, 131, 132, 133, 135, 136, 137, 139, 140, 141];
@@ -144,11 +144,11 @@ function validateABI(abi) {
 }
 
 /**
- * 下载文件（带进度，流式，支持重试）
- * @param {string} url - 下载地址
- * @param {string} destPath - 目标文件路径
- * @param {string|null} proxyUrl - 代理 URL（支持 http:// 和 socks5://）
- * @param {number} maxRetries - 最大重试次数
+ * 下載文件（帶進度，流式，支援重試）
+ * @param {string} url - 下載地址
+ * @param {string} destPath - 目標文件路徑
+ * @param {string|null} proxyUrl - 代理 URL（支援 http:// 和 socks5://）
+ * @param {number} maxRetries - 最大重試次數
  */
 async function downloadFile(url, destPath, proxyUrl = null, maxRetries = 3) {
     if (proxyUrl) {
@@ -159,40 +159,40 @@ async function downloadFile(url, destPath, proxyUrl = null, maxRetries = 3) {
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
         try {
             if (attempt > 1) {
-                logger.info('初始化', `第 ${attempt}/${maxRetries} 次尝试下载...`);
-                // 删除之前失败的文件
+                logger.info('初始化', `第 ${attempt}/${maxRetries} 次嘗試下載...`);
+                // 删除之前失敗的文件
                 try {
                     if (fs.existsSync(destPath)) {
                         fs.unlinkSync(destPath);
                     }
                 } catch (e) { }
             } else {
-                logger.info('初始化', `开始下载: ${url}`);
+                logger.info('初始化', `開始下載: ${url}`);
             }
 
             await downloadFileOnce(url, destPath, proxyUrl);
             return destPath;
         } catch (error) {
-            logger.error('初始化', `下载失败 (尝试 ${attempt}/${maxRetries}): ${error.message}`);
+            logger.error('初始化', `下載失敗 (嘗試 ${attempt}/${maxRetries}): ${error.message}`);
 
             if (attempt === maxRetries) {
                 throw error;
             }
 
-            // 等待后重试（递增延迟）
+            // 等待後重試（遞增延遲）
             const delay = attempt * 2000;
-            logger.info('初始化', `${delay / 1000} 秒后重试...`);
+            logger.info('初始化', `${delay / 1000} 秒後重試...`);
             await new Promise(resolve => setTimeout(resolve, delay));
         }
     }
 }
 
 /**
- * 单次下载尝试（内部函数）
- * 使用 Node.js 原生 http/https 模块，支持 SOCKS5 和 HTTP 代理
+ * 單次下載嘗試（內部函數）
+ * 使用 Node.js 原生 http/https 模組，支援 SOCKS5 和 HTTP 代理
  */
 async function downloadFileOnce(url, destPath, proxyUrl = null) {
-    const IDLE_TIMEOUT = 180000; // 3 分钟无数据传输才超时
+    const IDLE_TIMEOUT = 180000; // 3 分鐘無數據傳輸才超時
 
     return new Promise((resolve, reject) => {
         const urlObj = new URL(url);
@@ -211,7 +211,7 @@ async function downloadFileOnce(url, destPath, proxyUrl = null) {
             }
         };
 
-        // 创建代理 agent
+        // 創建代理 agent
         let httpModule = isHttps ? https : http;
         let agent = null;
 
@@ -227,7 +227,7 @@ async function downloadFileOnce(url, destPath, proxyUrl = null) {
             }
         }
 
-        // 添加 agent 到请求选项
+        // 添加 agent 到請求選項
         if (agent) {
             requestOptions.agent = agent;
         }
@@ -244,7 +244,7 @@ async function downloadFileOnce(url, destPath, proxyUrl = null) {
             if (idleTimer) clearTimeout(idleTimer);
             idleTimer = setTimeout(() => {
                 if (!finished) {
-                    const error = new Error(`下载超时: ${IDLE_TIMEOUT / 1000} 秒内没有收到任何数据`);
+                    const error = new Error(`下載超時: ${IDLE_TIMEOUT / 1000} 秒內沒有收到任何數據`);
                     cleanup();
                     reject(error);
                 }
@@ -263,12 +263,12 @@ async function downloadFileOnce(url, destPath, proxyUrl = null) {
         const handleResponse = (res) => {
             resetIdleTimer();
 
-            // 处理重定向
+            // 處理重定向
             if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
                 cleanup();
                 try { fs.unlinkSync(destPath); } catch (e) { }
                 logger.info('初始化', `重定向到: ${res.headers.location}`);
-                // 递归调用处理重定向
+                // 遞歸調用處理重定向
                 downloadFileOnce(res.headers.location, destPath, proxyUrl)
                     .then(resolve)
                     .catch(reject);
@@ -278,7 +278,7 @@ async function downloadFileOnce(url, destPath, proxyUrl = null) {
             if (res.statusCode !== 200) {
                 cleanup();
                 try { fs.unlinkSync(destPath); } catch (e) { }
-                reject(new Error(`HTTP 错误: ${res.statusCode}`));
+                reject(new Error(`HTTP 錯誤: ${res.statusCode}`));
                 return;
             }
 
@@ -292,12 +292,12 @@ async function downloadFileOnce(url, destPath, proxyUrl = null) {
                 downloadedSize += chunk.length;
 
                 const now = Date.now();
-                if (totalSize > 0 && now - lastLogTime > 100) {  // 100ms 更新一次，更流畅
+                if (totalSize > 0 && now - lastLogTime > 100) {  // 100ms 更新一次，更流暢
                     const percent = ((downloadedSize / totalSize) * 100).toFixed(1);
                     const downloadedMB = (downloadedSize / 1024 / 1024).toFixed(2);
                     const totalMB = (totalSize / 1024 / 1024).toFixed(2);
-                    // 使用 \r 回到行首，实现单行刷新
-                    process.stdout.write(`\r下载进度: ${percent}% (${downloadedMB}MB / ${totalMB}MB)    `);
+                    // 使用 \r 回到行首，實現單行刷新
+                    process.stdout.write(`\r下載進度: ${percent}% (${downloadedMB}MB / ${totalMB}MB)    `);
                     lastLogTime = now;
                 }
             });
@@ -325,23 +325,23 @@ async function downloadFileOnce(url, destPath, proxyUrl = null) {
                 const finalSize = (downloadedSize / 1024 / 1024).toFixed(2);
 
                 if (totalSize > 0 && downloadedSize !== totalSize) {
-                    process.stdout.write('\n');  // 换行，避免与进度条混在一起
-                    const errorMsg = `下载不完整: 预期 ${(totalSize / 1024 / 1024).toFixed(2)} MB, 实际 ${finalSize} MB`;
+                    process.stdout.write('\n');  // 換行，避免與進度條混在一起
+                    const errorMsg = `下載不完整: 預期 ${(totalSize / 1024 / 1024).toFixed(2)} MB, 實際 ${finalSize} MB`;
                     logger.error('初始化', errorMsg);
                     try { fs.unlinkSync(destPath); } catch (e) { }
                     reject(new Error(errorMsg));
                     return;
                 }
 
-                process.stdout.write('\n');  // 换行，结束进度条
-                logger.info('初始化', `下载完成: ${finalSize} MB`);
+                process.stdout.write('\n');  // 換行，結束進度條
+                logger.info('初始化', `下載完成: ${finalSize} MB`);
                 resolve(destPath);
             });
         };
 
         resetIdleTimer();
 
-        // 统一使用 httpModule.request 发起请求（agent 会自动处理代理）
+        // 統一使用 httpModule.request 發起請求（agent 會自動處理代理）
         req = httpModule.request(requestOptions, handleResponse);
         req.on('error', (error) => {
             if (finished) return;

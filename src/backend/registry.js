@@ -1,10 +1,10 @@
 /**
- * @fileoverview 适配器注册表
- * @description 自动扫描 adapter/ 目录，加载所有适配器的 manifest，提供统一查询接口。
+ * @fileoverview 適配器註冊表
+ * @description 自動掃描 adapter/ 目錄，載入所有適配器的 manifest，提供統一查詢介面。
  *
- * 设计目标：
- * - 新增适配器只需在 adapter/ 目录添加文件，无需修改框架代码
- * - 提供模型查询、策略查询、导航处理器聚合等统一接口
+ * 設計目標：
+ * - 新增適配器只需在 adapter/ 目錄添加文件，無需修改框架代碼
+ * - 提供模型查詢、策略查詢、導航處理器聚合等統一介面
  */
 
 import fs from 'fs';
@@ -18,37 +18,37 @@ const __dirname = path.dirname(__filename);
 const ADAPTER_DIR = path.join(__dirname, 'adapter');
 
 /**
- * 图片输入策略枚举
- */
-export const IMAGE_POLICY = {
-    OPTIONAL: 'optional',
-    REQUIRED: 'required',
-    FORBIDDEN: 'forbidden'
-};
+     * 圖片輸入策略列舉
+     */
+    export const IMAGE_POLICY = {
+        OPTIONAL: 'optional',
+        REQUIRED: 'required',
+        FORBIDDEN: 'forbidden'
+    };
 
 /**
- * 适配器注册表类
- */
-class AdapterRegistry {
-    constructor() {
-        /** @type {Map<string, object>} */
-        this.adapters = new Map();
-        /** @type {object} 适配器配置（来自 config.yaml） */
-        this.adapterConfig = {};
-        this.loaded = false;
-    }
+     * 適配器註冊表類
+     */
+    class AdapterRegistry {
+        constructor() {
+            /** @type {Map<string, object>} */
+            this.adapters = new Map();
+            /** @type {object} 適配器配置（來自 config.yaml） */
+            this.adapterConfig = {};
+            this.loaded = false;
+        }
 
     /**
-     * 设置适配器配置
-     * @param {object} config - 适配器配置对象
+     * 設定適配器配置
+     * @param {object} config - 適配器配置對象
      */
     setAdapterConfig(config) {
         this.adapterConfig = config || {};
     }
 
     /**
-     * 检查模型是否启用
-     * @param {string} adapterId - 适配器 ID
+     * 檢查模型是否啟用
+     * @param {string} adapterId - 適配器 ID
      * @param {string} modelId - 模型 ID
      * @returns {boolean}
      */
@@ -62,22 +62,22 @@ class AdapterRegistry {
         const inList = list.includes(modelId);
 
         if (mode === 'whitelist') {
-            // 白名单模式：只有在列表中的才启用
+            // 白名單模式：只有在列表中的才啟用
             return inList;
         } else {
-            // 黑名单模式（默认）：在列表中的被禁用
+            // 黑名單模式（預設）：在列表中的被禁用
             return !inList;
         }
     }
 
     /**
-     * 扫描并加载所有适配器
+     * 掃描並載入所有適配器
      */
     async loadAll() {
         if (this.loaded) return;
 
-        //logger.info('注册表', `正在扫描适配器目录: ${ADAPTER_DIR}`);
-        logger.info('注册表', `正在扫描适配器目录...`);
+        //logger.info('註冊表', `正在掃描適配器目錄: ${ADAPTER_DIR}`);
+        logger.info('註冊表', `正在掃描適配器目錄...`);
 
         const files = fs.readdirSync(ADAPTER_DIR).filter(f => f.endsWith('.js'));
 
@@ -87,31 +87,31 @@ class AdapterRegistry {
                 const module = await import(`file://${filePath}`);
 
                 if (!module.manifest) {
-                    logger.warn('注册表', `跳过 ${file}: 未导出 manifest`);
+                    logger.warn('註冊表', `跳過 ${file}: 未導出 manifest`);
                     continue;
                 }
 
                 const manifest = module.manifest;
 
-                // 校验必需字段
+                // 校驗必需字段
                 if (!this.validateManifest(manifest, file)) {
                     continue;
                 }
 
                 this.adapters.set(manifest.id, manifest);
-                logger.debug('注册表', `已加载适配器: ${manifest.id} (${manifest.displayName || file})`);
+                logger.debug('註冊表', `已載入適配器: ${manifest.id} (${manifest.displayName || file})`);
 
             } catch (err) {
-                logger.error('注册表', `加载 ${file} 失败: ${err.message}`);
+                logger.error('註冊表', `載入 ${file} 失敗: ${err.message}`);
             }
         }
 
         this.loaded = true;
-        logger.info('注册表', `适配器加载完成，共 ${this.adapters.size} 个可用`);
+        logger.info('註冊表', `適配器載入完成，共 ${this.adapters.size} 個可用`);
     }
 
     /**
-     * 校验 manifest 必需字段
+     * 校驗 manifest 必需字段
      * @param {object} manifest
      * @param {string} fileName
      * @returns {boolean}
@@ -120,15 +120,15 @@ class AdapterRegistry {
         const errors = [];
 
         if (!manifest.id || typeof manifest.id !== 'string') {
-            errors.push('缺少 id 或类型不正确');
+            errors.push('缺少 id 或類型不正確');
         }
 
         if (!manifest.generate || typeof manifest.generate !== 'function') {
-            errors.push('缺少 generate 函数');
+            errors.push('缺少 generate 函數');
         }
 
         if (!manifest.models || !Array.isArray(manifest.models)) {
-            errors.push('缺少 models 数组');
+            errors.push('缺少 models 陣列');
         } else {
             for (let i = 0; i < manifest.models.length; i++) {
                 const m = manifest.models[i];
@@ -136,13 +136,13 @@ class AdapterRegistry {
                     errors.push(`models[${i}] 缺少 id`);
                 }
                 if (!m.imagePolicy || !Object.values(IMAGE_POLICY).includes(m.imagePolicy)) {
-                    errors.push(`models[${i}] imagePolicy 无效`);
+                    errors.push(`models[${i}] imagePolicy 無效`);
                 }
             }
         }
 
         if (errors.length > 0) {
-            logger.error('注册表', `${fileName} manifest 校验失败: ${errors.join('; ')}`);
+            logger.error('註冊表', `${fileName} manifest 校驗失敗: ${errors.join('; ')}`);
             return false;
         }
 
@@ -150,8 +150,8 @@ class AdapterRegistry {
     }
 
     /**
-     * 获取适配器
-     * @param {string} id - 适配器 ID
+     * 獲取適配器
+     * @param {string} id - 適配器 ID
      * @returns {object|null}
      */
     getAdapter(id) {
@@ -159,7 +159,7 @@ class AdapterRegistry {
     }
 
     /**
-     * 获取所有已注册的适配器 ID
+     * 獲取所有已註冊的適配器 ID
      * @returns {string[]}
      */
     getAdapterIds() {
@@ -167,7 +167,7 @@ class AdapterRegistry {
     }
 
     /**
-     * 检查适配器是否存在
+     * 檢查適配器是否存在
      * @param {string} id
      * @returns {boolean}
      */
@@ -176,8 +176,8 @@ class AdapterRegistry {
     }
 
     /**
-     * 获取适配器的目标 URL
-     * @param {string} id - 适配器 ID
+     * 獲取適配器的目標 URL
+     * @param {string} id - 適配器 ID
      * @param {object} config - 全局配置
      * @param {object} workerConfig - Worker 配置
      * @returns {string}
@@ -194,8 +194,8 @@ class AdapterRegistry {
     }
 
     /**
-     * 获取适配器的导航处理器
-     * @param {string} id - 适配器 ID
+     * 獲取適配器的導航處理器
+     * @param {string} id - 適配器 ID
      * @returns {Function[]}
      */
     getNavigationHandlers(id) {
@@ -205,8 +205,8 @@ class AdapterRegistry {
     }
 
     /**
-     * 获取适配器的输入框就绪校验函数
-     * @param {string} id - 适配器 ID
+     * 獲取適配器的輸入框就緒校驗函數
+     * @param {string} id - 適配器 ID
      * @returns {Function|null}
      */
     getWaitInput(id) {
@@ -216,8 +216,8 @@ class AdapterRegistry {
     }
 
     /**
-     * 获取指定适配器的模型列表 (OpenAI 格式)
-     * @param {string} id - 适配器 ID
+     * 獲取指定適配器的模型列表 (OpenAI 格式)
+     * @param {string} id - 適配器 ID
      * @returns {object}
      */
     getModelsForAdapter(id) {
@@ -241,36 +241,36 @@ class AdapterRegistry {
     }
 
     /**
-     * 检查适配器是否支持指定模型
-     * @param {string} adapterId - 适配器 ID
+     * 檢查適配器是否支援指定模型
+     * @param {string} adapterId - 適配器 ID
      * @param {string} modelId - 模型 ID
      * @returns {boolean}
      */
     supportsModel(adapterId, modelId) {
         const adapter = this.getAdapter(adapterId);
         if (!adapter?.models) return false;
-        // 检查模型是否存在且未被禁用
+        // 檢查模型是否存在且未被禁用
         const modelExists = adapter.models.some(m => m.id === modelId);
         return modelExists && this.isModelEnabled(adapterId, modelId);
     }
 
     /**
-     * 解析模型 ID（保留用于向后兼容）
-     * @param {string} adapterId - 适配器 ID
+     * 解析模型 ID（保留用於向後相容）
+     * @param {string} adapterId - 適配器 ID
      * @param {string} modelKey - 模型 key
      * @returns {string|null} codeName，或 null
-     * @deprecated 新架构下适配器自己解析，此方法主要用于向后兼容
+     * @deprecated 新架構下適配器自己解析，此方法主要用於向後相容
      */
     resolveModelId(adapterId, modelKey) {
         const adapter = this.getAdapter(adapterId);
         if (!adapter) return null;
 
-        // 如果适配器还提供了 resolveModelId 函数，调用它
+        // 如果適配器還提供了 resolveModelId 函數，調用它
         if (typeof adapter.resolveModelId === 'function') {
             return adapter.resolveModelId(modelKey);
         }
 
-        // 默认行为：查找模型并返回 codeName
+        // 預設行為：查找模型並返回 codeName
         const model = adapter.models.find(m => m.id === modelKey);
         if (model) {
             return model.codeName || model.id;
@@ -280,8 +280,8 @@ class AdapterRegistry {
     }
 
     /**
-     * 获取模型的图片策略
-     * @param {string} adapterId - 适配器 ID
+     * 獲取模型的圖片策略
+     * @param {string} adapterId - 適配器 ID
      * @param {string} modelKey - 模型 key
      * @returns {string}
      */
@@ -296,8 +296,8 @@ class AdapterRegistry {
     }
 
     /**
-     * 获取模型的类型
-     * @param {string} adapterId - 适配器 ID
+     * 獲取模型的類型
+     * @param {string} adapterId - 適配器 ID
      * @param {string} modelKey - 模型 key
      * @returns {string} 'text' | 'image'
      */
@@ -312,7 +312,7 @@ class AdapterRegistry {
     }
 
     /**
-     * 聚合所有适配器的模型列表
+     * 聚合所有適配器的模型列表
      * @returns {object}
      */
     getAllModels() {
