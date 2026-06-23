@@ -1,6 +1,6 @@
 # WebAI2API
 
-[简体中文](README.md) | English
+[简体中文](README_CN.md) | English | [繁體中文](README.md) 
 
 > [!NOTE]
 > This English version is translated by **Gemini 3 Flash**.

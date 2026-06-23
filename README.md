@@ -1,6 +1,6 @@
 # WebAI2API
 
-简体中文 | [English](README_EN.md)
+繁體中文 | [ 簡體中文 ](README_CN.md)| [English](README_EN.md)
 
 <p align="center">
   <img src="https://github.com/user-attachments/assets/296a518e-c42b-4e39-8ff6-9b4381ed4f6e" width="49%" />
