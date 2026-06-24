@@ -1,19 +1,19 @@
-# 日志等级: debug | info | warn | error
+# 日誌等級: debug | info | warn | error
 logLevel: info
 
 server:
-  # 监听端口
+  # 監聽埠號
   port: 3000
-  # 鉴权 API Token 至少为 10 个字符 (可使用 npm run genkey 生成)
-  # 该配置会对 API 接口和 WebUI 生效
+  # 鑑權 API Token 至少為 10 個字元 (可使用 npm run genkey 生成)
+  # 此配置會對 API 介面和 WebUI 生效
   auth: sk-change-me-to-your-secure-key
-  # 流式请求心跳设置 (自动对 stream: true 的请求发送心跳防止超时)
+  # 流式請求心跳設定 (自動對 stream: true 的請求發送心跳防止逾時)
   keepalive:
     # 心跳模式
-    # "comment": (推荐) 发送 :keepalive 注释，不污染数据
-    # "content": (备用) 发送空 delta，仅当客户端必须收到 JSON 包才重置超时时使用
+    # "comment": (推薦) 傳送 :keepalive 註解，不污染資料
+    # "content": (備用) 傳送空 delta，僅當客戶端必須收到 JSON 包才重設逾時時使用
     mode: "comment"
-  # 图片生成结果返回 Markdown 格式
+  # 圖片生成結果回傳 Markdown 格式
   imageMarkdown: false
 
 backend:
@@ -21,196 +21,195 @@ backend:
   # Pool 配置
   # ========================================
   pool:
-    # 全局调度策略:
-    # - least_busy (推荐): 优先分配给当前任务最少的 Worker
-    # - round_robin: 轮询分配 (A -> B -> C -> A)
-    # - random: 随机分配
-    # 任务分发时，会把所有 Instance 下的所有 Worker 扁平化看待
+    # 全域排程策略:
+    # - least_busy (推薦): 優先分配給目前任務最少的 Worker
+    # - round_robin: 輪詢分配 (A -> B -> C -> A)
+    # - random: 隨機分配
+    # 任務分發時，會把所有 Instance 下的所有 Worker 扁平化看待
     strategy: least_busy
 
     # ========================================
-    # 故障转移配置
+    # 故障轉移配置
     # ========================================
-    # 当适配器返回网络错误时，自动尝试其他支持相同模型的 Worker
+    # 當配接器回傳網路錯誤時，自動嘗試其他支援相同模型的 Worker
     failover:
-      enabled: true           # 启用故障转移
-      maxRetries: 2           # 最多重试次数 (0=无限制)
-      imgDlRetry: false       # 图片下载器重试，为图片生成结果单独提供重试机会
-      imgDlRetryMaxRetries: 2 # 图片下载器重试次数
+      enabled: true # 啟用故障轉移
+      maxRetries: 2 # 最多重試次數 (0=無限制)
+      imgDlRetry: false # 圖片下載器重試，為圖片生成結果單獨提供重試機會
+      imgDlRetryMaxRetries: 2 # 圖片下載器重試次數
 
     # ========================================
-    # 生成等待时间
+    # 生成等待時間
     # ========================================
-    # 程序等待生成结果返回的最大超时时间，单位毫秒
+    # 程式等待生成結果回傳的最大逾時時間，單位毫秒
     waitTimeout: 120000
 
     # ========================================
-    # 浏览器实例列表
+    # 瀏覽器實例列表
     # ========================================
-    # 每个 Instance 代表一个独立的浏览器进程 (Context + UserData + Proxy)
-    # 登录模式:
-    #   npm start -- -login              启动第一个 Worker 进行登录
-    #   npm start -- -login=workerName   启动指定名称的 Worker 进行登录
-    # 注意: Worker 名称在全局必须唯一
+    # 每個 Instance 代表一個獨立的瀏覽器程序 (Context + UserData + Proxy)
+    # 登入模式:
+    #   npm start -- -login              啟動第一個 Worker 進行登入
+    #   npm start -- -login=workerName   啟動指定名稱的 Worker 進行登入
+    # 注意: Worker 名稱在全域必須唯一
     # ========================================
     instances:
       # ------------------------------------------------
-      # [实例 1] 默认浏览器实例
+      # [實例 1] 預設瀏覽器實例
       # ------------------------------------------------
-      - name: "browser_default"        # 实例 ID (用于日志显示和Cookie获取)
-        # userDataMark 不设置时，数据存放在 data/camoufoxUserData
-        # 同一实例下的所有 Worker 共享浏览器数据和登录状态
-        # 使用 Google OAuth 等统一登录时，只需登录一次即可用于所有 Worker
-        
-        # 该浏览器实例具备的能力 (适配器列表)
-        # 相当于在这个浏览器里打开了不同的标签页
+      - name: "browser_default" # 實例 ID (用於日誌顯示和Cookie取得)
+        # userDataMark 不設定時，資料存放在 data/camoufoxUserData
+        # 同一實例下的所有 Worker 共享瀏覽器資料和登入狀態
+        # 使用 Google OAuth 等統一登入時，只需登入一次即可用於所有 Worker
+
+        # 此瀏覽器具備的能力 (配接器列表)
+        # 相當於在此瀏覽器裡開啟了不同的標籤頁
         workers:
-          - name: "default"            # 唯一标识 (用于登录模式和日志显示)
-            # 适配器类型列表:
-            #   lmarena                (LMArena 图片生成)
+          - name: "default" # 唯一標識 (用於登入模式和日誌顯示)
+            # 配接器類型列表:
+            #   lmarena                (LMArena 圖片生成)
             #   lmarena_text           (LMArena 文本生成)
-            #   gemini_biz             (Gemini Business 图片、视频生成)
+            #   gemini_biz             (Gemini Business 圖片、影片生成)
             #   gemini_biz_text        (Gemini Business 文本生成)
-            #   gemini                 (Google Gemini 图片、视频生成)
+            #   gemini                 (Google Gemini 圖片、影片生成)
             #   gemini_text            (Google Gemini 文本生成)
-            #   zai_is                 (zAI 图片生成)
+            #   zai_is                 (zAI 圖片生成)
             #   zai_is_text            (zAI 文本生成)
-            #   nanobananafree_ai      (NanoBananaFree 图片生成)
+            #   nanobananafree_ai      (NanoBananaFree 圖片生成)
             #   zenmux_ai_text         (ZenMux 文本生成)
-            #   chatgpt                (ChatGPT 图片生成)
+            #   chatgpt                (ChatGPT 圖片生成)
             #   chatgpt_text           (ChatGPT 文本生成)
-            #   sora                   (Sora 视频生成)
+            #   sora                   (Sora 影片生成)
             #   deepseek_text          (DeepSeek 文本生成)
-            #   doubao                 (豆包 图片生成)
+            #   doubao                 (豆包 圖片生成)
             #   doubao_text            (豆包 文本生成)
-            #   test                   (浏览器检测，仅供调试使用)
-            type: lmarena              # 适配器类型
+            #   test                   (瀏覽器偵測，僅供除錯使用)
+            type: lmarena # 配接器類型
 
       # ------------------------------------------------
-      # 以下为多实例配置示例 (默认注释)
+      # 以下為多實例配置範例 (預設註解)
       # ------------------------------------------------
-      
-      # [实例 2] 独立数据目录 + 专属代理
+
+      # [實例 2] 獨立資料目錄 + 專屬代理
       # - name: "browser_us_01"
-      #   userDataMark: "us_01"        # 数据目录: data/camoufoxUserData_us_01
-      #   
-      #   # 实例级代理 (该实例下所有 Worker 共享此代理)
+      #   userDataMark: "us_01"        # 資料目錄: data/camoufoxUserData_us_01
+      #
+      #   # 實例級代理 (該實例下所有 Worker 共享此代理)
       #   proxy:
       #     enable: true
       #     type: socks5
       #     host: 192.168.1.10
       #     port: 1080
-      #     user: myuser               # 可选认证
+      #     user: myuser               # 可選認證
       #     passwd: mypassword
       #
       #   workers:
       #     - name: "us_lmarena"
       #       type: lmarena
-      #     
+      #
       #     - name: "us_zai"
       #       type: zai_is
-      #     
-      #     # 聚合类型 Worker (单标签多后端)
+      #
+      #     # 聚合類型 Worker (單標籤多後端)
       #     - name: "us_merged"
       #       type: merge
       #       mergeTypes: [gemini_biz, nanobananafree_ai]
-      #       mergeMonitor: gemini_biz  # 空闲时挂机监控的后端 (可选，留空则不启用)
+      #       mergeMonitor: gemini_biz  # 空閒時掛機監控的後端 (可選，留空則不啟用)
 
-      # [实例 3] 强制直连 (不使用代理)
+      # [實例 3] 強制直連 (不使用代理)
       # - name: "browser_direct"
       #   userDataMark: "direct"
       #   proxy:
-      #     enable: false              # 即使有全局代理也不使用
+      #     enable: false              # 即使有全域代理也不使用
       #
       #   workers:
       #     - name: "direct_gemini"
       #       type: gemini_biz
 
   # ========================================
-  # 适配器专属配置 (按需填写)
+  # 配接器專屬配置 (按需填寫)
   # ========================================
   adapter:
-    # Gemini Business 设置
+    # Gemini Business 設定
     gemini_biz:
       # 入口URL
-      # 示例: "https://business.gemini.google/home/cid/8888a888-b6e0-88be-86e1-888cf3ee8cf4"
+      # 範例: "https://business.gemini.google/home/cid/8888a888-b6e0-88be-86e1-888cf3ee8cf4"
       entryUrl: ""
     # Lmarena 配置
     lmarena:
-      # 开启后直接返回图片 URL (但其他不支持该选项的适配器仍然会返回 Base64)
+      # 開啟後直接回傳圖片 URL (但其他不支援此選項的配接器仍然會回傳 Base64)
       returnUrl: false
-      # 该适配器的模型黑白名单 (每个适配器都可以使用该功能，配置上级为适配器ID，推荐使用 WebUI 修改)
+      # 該配接器的模型黑白名單 (每個配接器都可以使用該功能，配置上級為配接器ID，推薦使用 WebUI 修改)
       # modelFilter:
-      #  mode: whitelist                        # 白名单whitelist 黑名单blacklist
-      #  list:                                  # 仅启用和仅禁用的模型列表
+      #  mode: whitelist                        # 白名單whitelist 黑名單blacklist
+      #  list:                                  # 僅啟用和僅停用的模型列表
       #    - gemini-3-pro-image-preview
       #    - gemini-3-pro-image-preview-2k
       #    - gemini-2.5-flash-image-preview
-      
 
 queue:
-  # 队列缓冲区大小（非流式请求的额外排队数）
-  # 实际队列上限 = Workers数量 + queueBuffer
-  # 设为 0 则不限制非流式请求数量
+  # 佇列緩衝區大小（非流式請求的額外排隊數）
+  # 實際佇列上限 = Workers數量 + queueBuffer
+  # 設為 0 則不限制非流式請求數量
   queueBuffer: 2
-  # 图片数量上限 
-  # 网页最多支持10个附件，如果设置大于10则直接丢弃超出10的图片
+  # 圖片數量上限
+  # 網頁最多支援10個附件，如果設定大於10則直接丟棄超出10的圖片
   imageLimit: 5
 
 browser:
-  # 浏览器可执行文件路径 (留空则使用默认的)
-  # 非必要不建议修改，否则你要处理很多额外依赖
-  # Windows系统示例 "C:\\camoufox\\camoufox.exe"
-  # Linux系统示例 "/opt/camoufox/camoufox"
+  # 瀏覽器可執行檔案路徑 (留空則使用預設的)
+  # 非必要不建議修改，否則你要處理很多額外依賴
+  # Windows系統範例 "C:\\camoufox\\camoufox.exe"
+  # Linux系統範例 "/opt/camoufox/camoufox"
   path: ""
-  
-  # 是否启用无头模式
+
+  # 是否啟用無頭模式
   headless: false
 
-  # 拟人鼠标轨迹模式
-  # - false:  禁用拟人轨迹，使用 Playwright 原生点击（性能最好，但会被自动化检测）
-  # - true:   使用项目优化的 ghost-cursor（更拟人化，如不会点击正中心，但性能稍差）
-  # - "camou": 使用 Camoufox 内置轨迹（性能与拟人化的平衡）
+  # 擬人滑鼠軌跡模式
+  # - false:  停用擬人軌跡，使用 Playwright 原生點擊（效能最好，但會被自動化偵測）
+  # - true:   使用專案優化的 ghost-cursor（更擬人化，如不會點擊正中心，但效能稍差）
+  # - "camou": 使用 Camoufox 內建軌跡（效能與擬人化的平衡）
   humanizeCursor: true
 
-  # 站点隔离 (fission.autostart)
-  # 开启保持 Firefox 默认开启状态
-  # 关闭此项可显著降低内存占用，防止低配服务器崩溃
-  # ⚠️ 风险提示: 正常 Firefox 用户默认开启 Fission，虽然关闭它不会泄露常规指纹，
-  # 但极高阶的反爬系统可能会通过检测“单进程模型”或“跨进程通信延迟”来识别自动化特征！
+  # 站點隔離 (fission.autostart)
+  # 開啟保持 Firefox 預設開啟狀態
+  # 關閉此項可顯著降低記憶體占用，防止低配伺服器崩潰
+  # ⚠️ 風險提示: 正常 Firefox 用戶預設開啟 Fission，雖然關閉它不會洩露常規指紋，
+  # 但極高階的反爬系統可能會透過偵測「單程序模型」或「跨程序通訊延遲」來識別自動化特徵！
   fission: true
 
-  # CSS 性能优化注入
-  # 通过禁用网页特效在无显卡环境下降低 CPU 压力
+  # CSS 效能最佳化注入
+  # 透過停用網頁特效在無顯示卡環境下降低 CPU 壓力
   cssInject:
-    # 禁用网页动画
+    # 停用網頁動畫
     # 作用：移除 transition 和 animation
-    # 收益：显著降低 CPU 持续占用
-    # 风险：低。几乎不影响浏览器指纹，但可能导致部分网页布局异常
+    # 收益：顯著降低 CPU 持續佔用
+    # 風險：低。幾乎不影響瀏覽器指紋，但可能導致部分網頁佈局異常
     animation: false
 
-    # 禁用滤镜和阴影
-    # 作用：移除 blur(模糊)、box-shadow(阴影) 等复杂渲染
-    # 收益：在无显卡环境下，能避免 CPU 占用 100% 导致卡顿
-    # 风险：中。界面会变得难看，少数反爬可能会检测样式计算结果
+    # 停用濾鏡和陰影
+    # 作用：移除 blur(模糊)、box-shadow(陰影) 等複雜渲染
+    # 收益：在無顯示卡環境下，能避免 CPU 佔用 100% 導致卡頓
+    # 風險：中。介面會變得難看，少數反爬可能會偵測樣式計算結果
     filter: false
 
-    # 降低字体渲染质量
-    # 作用：关闭字体抗锯齿，强制使用极速渲染模式
-    # 收益：微量减少 CPU 绘图压力
-    # ⚠️ 风险：高。会导致文字边缘有锯齿，且可能导致字体指纹与标准浏览器不符（易被高级反爬识别）
+    # 降低字型渲染品質
+    # 作用：關閉字型抗鋸齒，強制使用極速渲染模式
+    # 收益：微量減少 CPU 繪圖壓力
+    # ⚠️ 風險：高。會導致文字邊緣有鋸齒，且可能導致字型指紋與標準瀏覽器不符（易被高階反爬識別）
     font: false
 
-  # [全局代理] 如果 Instance 没有独立配置代理，将使用此配置
+  # [全域代理] 如果 Instance 沒有獨立配置代理，將使用此配置
   proxy:
-    # 是否启用代理
+    # 是否啟用代理
     enable: false
-    # 代理类型: http 或 socks5
+    # 代理類型: http 或 socks5
     type: http
-    # 代理主机
+    # 代理主機
     host: 127.0.0.1
-    # 代理端口
+    # 代理埠號
     port: 7890
-    # 代理认证 (可选)
+    # 代理認證 (可選)
     # user: username
     # passwd: password
