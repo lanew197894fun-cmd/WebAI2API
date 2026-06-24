@@ -2,6 +2,7 @@
 import { ref, onMounted, onUnmounted } from "vue";
 import { useRouter } from "vue-router";
 import { Modal, message } from "ant-design-vue";
+import { useI18n } from "vue-i18n";
 import {
   DashboardOutlined,
   SettingOutlined,
@@ -17,12 +18,14 @@ import {
   HistoryOutlined,
   RocketOutlined,
   MenuOutlined,
+  GlobalOutlined,
 } from "@ant-design/icons-vue";
 import { useSettingsStore } from "@/stores/settings";
 import LoginModal from "@/components/auth/LoginModal.vue";
 
 const router = useRouter();
 const settingsStore = useSettingsStore();
+const { t, locale } = useI18n();
 
 const selectedKeys = ref(["dash"]);
 const collapsed = ref(false);
@@ -85,11 +88,11 @@ const fileToBase64 = (file) => {
 const beforeUpload = (file) => {
   const allowedTypes = ["image/png", "image/jpeg", "image/gif", "image/webp"];
   if (!allowedTypes.includes(file.type)) {
-    message.error("僅支援 PNG, JPEG, GIF, WebP 格式");
+    message.error(t("request.imageFormatErrorCN"));
     return false;
   }
   if (chatImageList.value.length >= 10) {
-    message.error("最多上傳 10 張圖片");
+    message.error(t("request.maxImagesErrorCN"));
     return false;
   }
   return false; // 阻止自動上傳，手動處理
@@ -110,7 +113,7 @@ const handleImageChange = async (info) => {
       base64,
     });
   } catch (e) {
-    message.error("圖片讀取失敗");
+    message.error(t("request.imageReadErrorCN"));
   }
 };
 
@@ -345,10 +348,9 @@ async function checkConnection() {
     if (!disconnectModalShown && !isInitializing.value) {
       disconnectModalShown = true;
       Modal.warning({
-        title: "後端連線斷開",
-        content:
-          "無法連線到後端服務，請檢查服務是否正在執行。連線恢復後頁面將自動重新整理。",
-        okText: "我知道了",
+        title: t("connection.disconnectedCN"),
+        content: t("connection.disconnectMsgCN"),
+        okText: t("connection.gotItCN"),
         centered: true,
       });
     }
@@ -403,7 +405,7 @@ onMounted(async () => {
 <template>
   <a-spin
     :spinning="isInitializing"
-    tip="正在驗證身分..."
+    :tip="$t('header.verifying')"
     size="large"
     style="
       height: 100vh;
@@ -452,6 +454,21 @@ onMounted(async () => {
           WebAI2API
         </div>
         <a-flex justify="end" align="center" style="flex: 1" :gap="8">
+          <a-select
+            v-model:value="locale"
+            size="small"
+            style="width: 100px"
+            @change="
+              (val) => {
+                locale = val;
+                localStorage.setItem('webui_locale', val);
+              }
+            "
+          >
+            <a-select-option value="en">English</a-select-option>
+            <a-select-option value="zh-CN">简体中文</a-select-option>
+            <a-select-option value="zh-TW">繁體中文</a-select-option>
+          </a-select>
           <a-button
             @click="openApiTestDrawer"
             :size="isMobile ? 'small' : 'middle'"
@@ -459,7 +476,7 @@ onMounted(async () => {
             <template #icon>
               <ApiOutlined />
             </template>
-            <span v-if="!isMobile">介面測試</span>
+            <span v-if="!isMobile">{{ $t("header.apiTest") }}</span>
           </a-button>
           <a-button
             danger
@@ -470,7 +487,7 @@ onMounted(async () => {
             <template #icon>
               <PoweroffOutlined />
             </template>
-            <span v-if="!isMobile">登出</span>
+            <span v-if="!isMobile">{{ $t("header.logout") }}</span>
           </a-button>
         </a-flex>
       </a-layout-header>
@@ -502,34 +519,46 @@ onMounted(async () => {
           >
             <a-menu-item key="dash">
               <DashboardOutlined />
-              <span>狀態總覽</span>
+              <span>{{ $t("menu.dash") }}</span>
             </a-menu-item>
             <a-menu-item key="history">
               <RocketOutlined />
-              <span>請求模型</span>
+              <span>{{ $t("menu.history") }}</span>
             </a-menu-item>
             <a-sub-menu key="settings">
               <template #title>
                 <span>
                   <SettingOutlined />
-                  <span>系統設定</span>
+                  <span>{{ $t("menu.settings") }}</span>
                 </span>
               </template>
-              <a-menu-item key="settings-server">伺服器</a-menu-item>
-              <a-menu-item key="settings-workers">工作池</a-menu-item>
-              <a-menu-item key="settings-browser">瀏覽器</a-menu-item>
-              <a-menu-item key="settings-adapters">配接器</a-menu-item>
+              <a-menu-item key="settings-server">{{
+                $t("menu.server")
+              }}</a-menu-item>
+              <a-menu-item key="settings-workers">{{
+                $t("menu.workers")
+              }}</a-menu-item>
+              <a-menu-item key="settings-browser">{{
+                $t("menu.browser")
+              }}</a-menu-item>
+              <a-menu-item key="settings-adapters">{{
+                $t("menu.adapters")
+              }}</a-menu-item>
             </a-sub-menu>
             <a-sub-menu key="tools">
               <template #title>
                 <span>
                   <ToolOutlined />
-                  <span>系統管理</span>
+                  <span>{{ $t("menu.tools") }}</span>
                 </span>
               </template>
-              <a-menu-item key="tools-display">虛擬顯示器</a-menu-item>
-              <a-menu-item key="tools-cache">快取與重新啟動</a-menu-item>
-              <a-menu-item key="tools-logs">日誌檢視器</a-menu-item>
+              <a-menu-item key="tools-display">{{
+                $t("menu.display")
+              }}</a-menu-item>
+              <a-menu-item key="tools-cache">{{
+                $t("menu.cache")
+              }}</a-menu-item>
+              <a-menu-item key="tools-logs">{{ $t("menu.logs") }}</a-menu-item>
             </a-sub-menu>
           </a-menu>
         </a-layout-sider>
@@ -574,7 +603,7 @@ onMounted(async () => {
     <!-- 介面測試抽屜 -->
     <a-drawer
       v-model:open="apiTestDrawer"
-      title="介面測試"
+      :title="$t('apiTest.title')"
       placement="right"
       :width="isMobile ? '100%' : 500"
     >
@@ -588,23 +617,31 @@ onMounted(async () => {
               @click="testApi('models')"
               :loading="apiTestResults.models.status === 'loading'"
             >
-              测试
+              {{ $t("apiTest.test") }}
             </a-button>
           </template>
           <div v-if="apiTestResults.models.status === 'success'">
-            <a-tag color="success"> <CheckCircleOutlined /> 成功 </a-tag>
+            <a-tag color="success">
+              <CheckCircleOutlined /> {{ $t("apiTest.success") }}
+            </a-tag>
             <div style="margin-top: 8px; font-size: 12px; color: #8c8c8c">
-              返回 {{ apiTestResults.models.data?.data?.length || 0 }} 個模型
+              {{
+                $t("apiTest.returnedModels", {
+                  n: apiTestResults.models.data?.data?.length || 0,
+                })
+              }}
             </div>
           </div>
           <div v-else-if="apiTestResults.models.status === 'error'">
-            <a-tag color="error"> <CloseCircleOutlined /> 失敗 </a-tag>
+            <a-tag color="error">
+              <CloseCircleOutlined /> {{ $t("apiTest.failed") }}
+            </a-tag>
             <div style="margin-top: 8px; font-size: 12px; color: #ff4d4f">
               {{ apiTestResults.models.error }}
             </div>
           </div>
           <div v-else style="color: #8c8c8c; font-size: 12px">
-            點擊測試按鈕開始
+            {{ $t("apiTest.clickToTest") }}
           </div>
         </a-card>
 
@@ -617,24 +654,31 @@ onMounted(async () => {
               @click="testApi('cookies')"
               :loading="apiTestResults.cookies.status === 'loading'"
             >
-              测试
+              {{ $t("apiTest.test") }}
             </a-button>
           </template>
           <div v-if="apiTestResults.cookies.status === 'success'">
-            <a-tag color="success"> <CheckCircleOutlined /> 成功 </a-tag>
+            <a-tag color="success">
+              <CheckCircleOutlined /> {{ $t("apiTest.success") }}
+            </a-tag>
             <div style="margin-top: 8px; font-size: 12px; color: #8c8c8c">
-              返回 {{ apiTestResults.cookies.data?.cookies?.length || 0 }} 個
-              Cookie
+              {{
+                $t("apiTest.returnedCookies", {
+                  n: apiTestResults.cookies.data?.cookies?.length || 0,
+                })
+              }}
             </div>
           </div>
           <div v-else-if="apiTestResults.cookies.status === 'error'">
-            <a-tag color="error"> <CloseCircleOutlined /> 失敗 </a-tag>
+            <a-tag color="error">
+              <CloseCircleOutlined /> {{ $t("apiTest.failed") }}
+            </a-tag>
             <div style="margin-top: 8px; font-size: 12px; color: #ff4d4f">
               {{ apiTestResults.cookies.error }}
             </div>
           </div>
           <div v-else style="color: #8c8c8c; font-size: 12px">
-            點擊測試按鈕開始
+            {{ $t("apiTest.clickToTest") }}
           </div>
         </a-card>
 
@@ -648,20 +692,20 @@ onMounted(async () => {
               :loading="apiTestResults.chat.status === 'loading'"
               :disabled="!chatTestModel"
             >
-              测试
+              {{ $t("apiTest.test") }}
             </a-button>
           </template>
 
           <!-- 模型选择 -->
           <div style="margin-bottom: 12px">
             <div style="font-size: 12px; color: #8c8c8c; margin-bottom: 4px">
-              模型
+              {{ $t("request.model") }}
             </div>
             <a-select
               v-model:value="chatTestModel"
               style="width: 100%"
               size="small"
-              placeholder="選擇模型"
+              :placeholder="$t('request.selectModel')"
               show-search
             >
               <a-select-option
@@ -677,11 +721,11 @@ onMounted(async () => {
           <!-- 提示詞 -->
           <div style="margin-bottom: 12px">
             <div style="font-size: 12px; color: #8c8c8c; margin-bottom: 4px">
-              提示詞
+              {{ $t("request.prompt") }}
             </div>
             <a-textarea
               v-model:value="chatTestPrompt"
-              placeholder="輸入提示詞"
+              :placeholder="$t('request.enterPrompt')"
               :rows="2"
               size="small"
             />
@@ -690,7 +734,7 @@ onMounted(async () => {
           <!-- 圖片上傳 -->
           <div style="margin-bottom: 12px">
             <div style="font-size: 12px; color: #8c8c8c; margin-bottom: 4px">
-              附加圖片 ({{ chatImageList.length }}/10)
+              {{ $t("request.attachedImagesCN", { n: chatImageList.length }) }}
             </div>
             <a-upload-dragger
               :file-list="[]"
@@ -705,7 +749,7 @@ onMounted(async () => {
                 <InboxOutlined style="font-size: 24px; color: #1890ff" />
               </p>
               <p style="font-size: 12px; margin: 4px 0 0 0; color: #8c8c8c">
-                點擊或拖曳上傳圖片 (PNG/JPEG/GIF/WebP)
+                {{ $t("request.clickUploadCN") }}
               </p>
             </a-upload-dragger>
             <div
@@ -728,7 +772,9 @@ onMounted(async () => {
 
           <!-- 流式选项 -->
           <div style="margin-bottom: 12px">
-            <a-checkbox v-model:checked="chatStreamMode">串流回應</a-checkbox>
+            <a-checkbox v-model:checked="chatStreamMode">{{
+              $t("apiTest.streamingResponse")
+            }}</a-checkbox>
           </div>
 
           <!-- 测试结果 -->
@@ -748,12 +794,12 @@ onMounted(async () => {
                 <LoadingOutlined />
                 {{
                   chatStreamMode
-                    ? "正在接收串流回應..."
-                    : "請求中，可能需要較長時間..."
+                    ? $t("apiTest.streamingResponse")
+                    : $t("apiTest.requesting")
                 }}
               </a-tag>
               <a-tag v-else color="success">
-                <CheckCircleOutlined /> 成功
+                <CheckCircleOutlined /> {{ $t("apiTest.success") }}
               </a-tag>
             </div>
 
@@ -867,7 +913,7 @@ onMounted(async () => {
                   <div
                     style="font-size: 11px; color: #8c8c8c; margin-bottom: 4px"
                   >
-                    生成的影片
+                    {{ $t("request.detail.generatedVideo") }}
                   </div>
                   <video
                     :src="video.src"
@@ -879,7 +925,7 @@ onMounted(async () => {
                       border-radius: 2px;
                     "
                   >
-                    您的瀏覽器不支援影片播放。
+                    {{ $t("request.detail.videoNotSupportedCN") }}
                   </video>
                 </div>
               </div>
@@ -888,7 +934,9 @@ onMounted(async () => {
 
           <!-- 錯誤狀態 -->
           <div v-else-if="apiTestResults.chat.status === 'error'">
-            <a-tag color="error"> <CloseCircleOutlined /> 失敗 </a-tag>
+            <a-tag color="error">
+              <CloseCircleOutlined /> {{ $t("apiTest.failed") }}
+            </a-tag>
             <div style="margin-top: 8px; font-size: 12px; color: #ff4d4f">
               {{ apiTestResults.chat.error }}
             </div>

@@ -1,5 +1,6 @@
 <script setup>
 import { ref, onMounted, onUnmounted, computed } from "vue";
+import { useI18n } from "vue-i18n";
 import { useSettingsStore } from "@/stores/settings";
 import {
   ReloadOutlined,
@@ -14,6 +15,7 @@ import {
 } from "@ant-design/icons-vue";
 import { message, Modal } from "ant-design-vue";
 
+const { t } = useI18n();
 const settingsStore = useSettingsStore();
 
 const logs = ref([]);
@@ -24,12 +26,10 @@ const refreshInterval = ref(null);
 const searchText = ref("");
 const levelFilter = ref("all");
 
-// 統計查詢相關
 const dateRange = ref([]);
 const rangeStats = ref({ success: 0, failed: 0, days: 0 });
 const statsLoading = ref(false);
 
-// 日誌級別配置
 const levelConfig = {
   INFO: { color: "#1890ff", icon: InfoCircleOutlined },
   WARN: { color: "#faad14", icon: WarningOutlined },
@@ -37,7 +37,6 @@ const levelConfig = {
   DBUG: { color: "#722ed1", icon: BugOutlined },
 };
 
-// 取得日誌
 const fetchLogs = async () => {
   loading.value = true;
   try {
@@ -50,16 +49,14 @@ const fetchLogs = async () => {
       total.value = data.total || 0;
     }
   } catch (e) {
-    message.error("取得日誌失敗");
+    message.error(t("common.failed"));
   } finally {
     loading.value = false;
   }
 };
 
-// 解析日誌行
 const parseLogs = (lines) => {
   return lines.map((line, index) => {
-    // 格式: 2025-12-20 17:00:00.000 [INFO] [模組] 訊息
     const match = line.match(
       /^(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{3}) \[(\w+)\] \[([^\]]+)\] (.*)$/,
     );
@@ -84,65 +81,47 @@ const parseLogs = (lines) => {
   });
 };
 
-// 過濾後的日誌（最新的在最上面）
 const filteredLogs = computed(() => {
   const filtered = logs.value.filter((log) => {
-    // 級別過濾
     if (levelFilter.value !== "all" && log.level !== levelFilter.value) {
       return false;
     }
-    // 搜尋過濾
     if (searchText.value) {
       const search = searchText.value.toLowerCase();
       return log.raw.toLowerCase().includes(search);
     }
     return true;
   });
-  // 反轉陣列，最新的日誌顯示在最上面
   return filtered.reverse();
 });
 
-// 清除日誌
 const clearLogs = () => {
-    Modal.confirm({
-        title: '確認清除日誌',
-        content: '此操作將刪除所有系統日誌檔案，是否繼續？',
-        okText: '確認清除',
-        okType: 'danger',
-        cancelText: '取消',
-        async onOk() {
-            try {
-                const res = await fetch('/admin/logs', {
-                    method: 'DELETE',
-                    headers: settingsStore.getHeaders()
-                });
-                if (res.ok) {
-                    message.success('日誌已清除');
-                    logs.value = [];
-                    total.value = 0;
-                } else {
-                    message.error('清除失敗');
-                }
-            } catch (e) {
-                message.error('請求失敗');
-            }
-        }
-    });
+  Modal.confirm({
+    title: t("logs.confirmClearTitleCN"),
+    content: t("logs.confirmClearContentCN"),
+    okText: t("logs.confirmClearOkCN"),
+    okType: "danger",
+    cancelText: t("common.cancel"),
+    async onOk() {
+      try {
+        const res = await fetch("/admin/logs", {
+          method: "DELETE",
+          headers: settingsStore.getHeaders(),
+        });
         if (res.ok) {
-          message.success("日誌已清除");
+          message.success(t("logs.cleared"));
           logs.value = [];
           total.value = 0;
         } else {
-          message.error("清除失敗");
+          message.error(t("logs.clearFailed"));
         }
       } catch (e) {
-        message.error("請求失敗");
+        message.error(t("common.failed"));
       }
     },
   });
 };
 
-// 匯出日誌
 const exportLogs = () => {
   const content = logs.value.map((l) => l.raw).join("\n");
   const blob = new Blob([content], { type: "text/plain" });
@@ -154,11 +133,10 @@ const exportLogs = () => {
   URL.revokeObjectURL(url);
 };
 
-// 切換自動重新整理
 const toggleAutoRefresh = (newState) => {
   autoRefresh.value = newState;
   if (newState) {
-    fetchLogs(); // 立即重新整理一次
+    fetchLogs();
     refreshInterval.value = setInterval(fetchLogs, 5000);
   } else {
     if (refreshInterval.value) {
@@ -168,7 +146,6 @@ const toggleAutoRefresh = (newState) => {
   }
 };
 
-// 查詢日期範圍統計
 const fetchRangeStats = async () => {
   if (!dateRange.value || dateRange.value.length !== 2) {
     rangeStats.value = { success: 0, failed: 0, days: 0 };
@@ -186,25 +163,27 @@ const fetchRangeStats = async () => {
       rangeStats.value = await res.json();
     }
   } catch (e) {
-    message.error("取得統計失敗");
+    message.error(t("common.failed"));
   } finally {
     statsLoading.value = false;
   }
 };
 
-// 刪除選定範圍的統計資料
 const clearRangeStats = () => {
   if (!dateRange.value || dateRange.value.length !== 2) {
-    message.warning("請先選擇日期範圍");
+    message.warning(t("logs.selectDateRange"));
     return;
   }
 
   Modal.confirm({
-    title: "確認刪除",
-    content: `確定要刪除 ${dateRange.value[0].format("YYYY-MM-DD")} 至 ${dateRange.value[1].format("YYYY-MM-DD")} 的統計資料嗎？`,
-    okText: "刪除",
+    title: t("common.confirmDelete"),
+    content: t("logs.confirmDeleteStats", {
+      start: dateRange.value[0].format("YYYY-MM-DD"),
+      end: dateRange.value[1].format("YYYY-MM-DD"),
+    }),
+    okText: t("common.delete"),
     okType: "danger",
-    cancelText: "取消",
+    cancelText: t("common.cancel"),
     async onOk() {
       try {
         const [start, end] = dateRange.value;
@@ -213,11 +192,11 @@ const clearRangeStats = () => {
           { method: "DELETE", headers: settingsStore.getHeaders() },
         );
         if (res.ok) {
-          message.success("統計資料已刪除");
+          message.success(t("logs.statsDeleted"));
           rangeStats.value = { success: 0, failed: 0, days: 0 };
         }
       } catch (e) {
-        message.error("刪除失敗");
+        message.error(t("common.failed"));
       }
     },
   });
@@ -235,8 +214,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <!-- 統計查詢面板 -->
-  <a-card title="請求統計" :bordered="false">
+  <a-card :title="$t('logs.pageTitle')" :bordered="false">
     <template #extra>
       <a-button
         type="link"
@@ -248,7 +226,7 @@ onUnmounted(() => {
         <template #icon>
           <DeleteOutlined />
         </template>
-        刪除統計
+        {{ $t("logs.deleteStats") }}
       </a-button>
     </template>
 
@@ -256,7 +234,10 @@ onUnmounted(() => {
       <a-range-picker
         v-model:value="dateRange"
         :format="'YYYY-MM-DD'"
-        :placeholder="['開始日期', '結束日期']"
+        :placeholder="[
+          $t('request.filter.startDate'),
+          $t('request.filter.endDate'),
+        ]"
         size="small"
         class="stats-date-picker"
         @change="fetchRangeStats"
@@ -269,30 +250,33 @@ onUnmounted(() => {
           <div class="stat-item success">
             <CheckCircleOutlined />
             <span class="stat-value">{{ rangeStats.success }}</span>
-            <span class="stat-label">成功</span>
+            <span class="stat-label">{{ $t("logs.success") }}</span>
           </div>
           <div class="stat-item error">
             <CloseCircleOutlined />
             <span class="stat-value">{{ rangeStats.failed }}</span>
-            <span class="stat-label">失敗</span>
+            <span class="stat-label">{{ $t("logs.failed") }}</span>
           </div>
           <div class="stat-item neutral">
             <span class="stat-value">{{ rangeStats.days }}</span>
-            <span class="stat-label">天</span>
+            <span class="stat-label">{{ $t("logs.days") }}</span>
           </div>
         </div>
       </a-spin>
     </div>
   </a-card>
 
-  <!-- 系統日誌 -->
-  <a-card title="系統日誌" :bordered="false" style="margin-top: 24px">
-    <!-- 工具列 -->
+  <a-card
+    :title="$t('logs.systemLogs')"
+    :bordered="false"
+    style="margin-top: 24px"
+  >
     <div class="toolbar">
-      <!-- 第一行：級別篩選和操作按鈕 -->
       <div class="toolbar-row">
         <a-select v-model:value="levelFilter" style="width: 90px" size="small">
-          <a-select-option value="all">全部</a-select-option>
+          <a-select-option value="all">{{
+            $t("logs.levelAll")
+          }}</a-select-option>
           <a-select-option value="INFO">INFO</a-select-option>
           <a-select-option value="WARN">WARN</a-select-option>
           <a-select-option value="ERRO">ERROR</a-select-option>
@@ -300,7 +284,11 @@ onUnmounted(() => {
         </a-select>
         <a-space :size="4">
           <a-tooltip
-            :title="autoRefresh ? '關閉自動重新整理' : '開啟自動重新整理'"
+            :title="
+              autoRefresh
+                ? $t('logs.autoRefreshOff')
+                : $t('logs.autoRefreshOnTitle')
+            "
           >
             <a-button
               size="small"
@@ -312,14 +300,14 @@ onUnmounted(() => {
               </template>
             </a-button>
           </a-tooltip>
-          <a-tooltip title="匯出日誌">
+          <a-tooltip :title="$t('logs.exportLogs')">
             <a-button size="small" @click="exportLogs">
               <template #icon>
                 <DownloadOutlined />
               </template>
             </a-button>
           </a-tooltip>
-          <a-tooltip title="清除日誌">
+          <a-tooltip :title="$t('logs.clearLogs')">
             <a-button size="small" danger @click="clearLogs">
               <template #icon>
                 <DeleteOutlined />
@@ -328,11 +316,10 @@ onUnmounted(() => {
           </a-tooltip>
         </a-space>
       </div>
-      <!-- 第二行：搜尋框 -->
       <div class="toolbar-row">
         <a-input-search
           v-model:value="searchText"
-          placeholder="搜尋日誌"
+          :placeholder="$t('logs.searchLogs')"
           size="small"
           enter-button
           allow-clear
@@ -341,15 +328,13 @@ onUnmounted(() => {
       </div>
     </div>
 
-    <!-- 統計資訊 -->
     <div style="margin-bottom: 12px; color: #8c8c8c; font-size: 12px">
-      共 {{ total }} 條日誌，目前顯示 {{ filteredLogs.length }} 條
+      {{ $t("logs.totalCount", { total, shown: filteredLogs.length }) }}
       <span v-if="autoRefresh" style="color: #1890ff; margin-left: 8px">
-        <ReloadOutlined :spin="true" /> 自動重新整理中
+        <ReloadOutlined :spin="true" /> {{ $t("logs.autoRefreshOn") }}
       </span>
     </div>
 
-    <!-- 日誌列表 -->
     <div class="log-container">
       <div
         v-for="log in filteredLogs"
@@ -370,7 +355,10 @@ onUnmounted(() => {
         </div>
         <span class="log-message">{{ log.message }}</span>
       </div>
-      <a-empty v-if="filteredLogs.length === 0" description="暫無日誌" />
+      <a-empty
+        v-if="filteredLogs.length === 0"
+        :description="$t('logs.noLogs')"
+      />
     </div>
   </a-card>
 </template>
@@ -438,7 +426,6 @@ onUnmounted(() => {
   color: #722ed1;
 }
 
-/* 工具欄樣式 */
 .toolbar {
   margin-bottom: 16px;
 }
@@ -455,7 +442,6 @@ onUnmounted(() => {
   margin-bottom: 0;
 }
 
-/* 大螢幕：工具欄一行顯示 */
 @media (min-width: 768px) {
   .toolbar {
     display: flex;
@@ -473,8 +459,6 @@ onUnmounted(() => {
     max-width: 300px;
   }
 }
-
-/* 統計內容樣式 */
 
 .stats-content {
   display: flex;
@@ -526,12 +510,10 @@ onUnmounted(() => {
   color: #8c8c8c;
 }
 
-/* 日期選擇器 */
 .stats-date-picker {
   width: 240px;
 }
 
-/* 響應式：小螢幕統計面板垂直佈局 */
 @media (max-width: 576px) {
   .stats-content {
     flex-direction: column;
@@ -547,7 +529,6 @@ onUnmounted(() => {
   }
 }
 
-/* 響應式：行動端日誌堆疊佈局 */
 @media (max-width: 768px) {
   .stats-date-picker {
     width: 100%;

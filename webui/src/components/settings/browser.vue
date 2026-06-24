@@ -1,8 +1,10 @@
 <script setup>
 import { onMounted, reactive } from "vue";
+import { useI18n } from "vue-i18n";
 import { useSettingsStore } from "@/stores/settings";
 
 const settingsStore = useSettingsStore();
+const { t } = useI18n();
 
 // 表單資料
 const formData = reactive({
@@ -79,22 +81,20 @@ const handleSave = async () => {
 
 <template>
   <a-layout style="background: transparent">
-    <a-card title="瀏覽器設定" :bordered="false" style="width: 100%">
+    <a-card :title="$t('browser.title')" :bordered="false" style="width: 100%">
       <a-row :gutter="[16, 16]">
         <!-- 瀏覽器可執行檔案路徑 -->
         <a-col :xs="24" :md="24">
           <div style="margin-bottom: 8px">
             <div style="font-weight: 600; margin-bottom: 4px">
-              瀏覽器可執行檔案路徑
+              {{ $t("browser.browserPath") }}
             </div>
             <div style="font-size: 12px; color: #8c8c8c; margin-bottom: 8px">
-              留空則使用 Camoufox 預設下載路徑<br />
-              Windows示例: C:\camoufox\camoufox.exe<br />
-              Linux示例: /opt/camoufox/camoufox
+              {{ $t("browser.browserPath") }}
             </div>
             <a-input
               v-model:value="formData.path"
-              placeholder="留空使用預設路徑"
+              :placeholder="$t('browser.browserPath')"
             />
           </div>
         </a-col>
@@ -102,14 +102,17 @@ const handleSave = async () => {
         <!-- 無頭模式 -->
         <a-col :xs="24" :md="12">
           <div style="margin-bottom: 8px">
-            <div style="font-weight: 600; margin-bottom: 4px">無頭模式</div>
+            <div style="font-weight: 600; margin-bottom: 4px">
+              {{ $t("browser.headless") }}
+            </div>
             <div style="font-size: 12px; color: #8c8c8c; margin-bottom: 8px">
-              啟用後瀏覽器無介面化運行<br />
-              登入模式和 Xvfb 模式會無視該設定強行禁用無頭模式
+              {{ $t("browser.headless") }}
             </div>
             <a-switch v-model:checked="formData.headless" />
             <span style="margin-left: 8px">
-              {{ formData.headless ? "已啟用" : "未啟用" }}
+              {{
+                formData.headless ? $t("common.enable") : $t("common.disable")
+              }}
             </span>
           </div>
         </a-col>
@@ -118,19 +121,16 @@ const handleSave = async () => {
         <a-col :xs="24" :md="12">
           <div style="margin-bottom: 8px">
             <div style="font-weight: 600; margin-bottom: 4px">
-              站點隔離 (fission.autostart)
+              {{ $t("browser.fission") }}
             </div>
             <div style="font-size: 12px; color: #8c8c8c; margin-bottom: 8px">
-              關閉可低記憶體佔用，適合低配伺服器<br />
-              正常 FireFox 用戶是預設開啟的，請酌情關閉<br />
-              <span style="color: #faad14"
-                >⚠️
-                反爬檢測可能通過檢測單進程或者跨進程延遲來識別自動化特徵</span
-              >
+              {{ $t("browser.fission") }}
             </div>
             <a-switch v-model:checked="formData.fission" />
             <span style="margin-left: 8px">
-              {{ formData.fission ? "已啟用" : "已關閉 (省記憶體)" }}
+              {{
+                formData.fission ? $t("common.enable") : $t("common.disable")
+              }}
             </span>
           </div>
         </a-col>
@@ -139,32 +139,22 @@ const handleSave = async () => {
         <a-col :xs="24" :md="24">
           <div style="margin-bottom: 8px">
             <div style="font-weight: 600; margin-bottom: 4px">
-              擬人鼠標軌跡模式
+              {{ $t("browser.humanizeCursor") }}
             </div>
             <div style="font-size: 12px; color: #8c8c8c; margin-bottom: 8px">
-              控制鼠標點擊的擬人化程度，影響性能和反爬檢測風險
+              {{ $t("browser.humanizeCursor") }}
             </div>
             <a-segmented
               v-model:value="formData.humanizeCursor"
               block
               :options="[
-                { label: '停用 (效能最佳)', value: false },
-                { label: 'Ghost-Cursor (更擬人)', value: true },
-                { label: 'Camoufox內置 (平衡)', value: 'camou' },
+                { label: $t('browser.disabled'), value: false },
+                { label: $t('browser.ghostCursor'), value: true },
+                { label: $t('browser.camoufox'), value: 'camou' },
               ]"
             />
             <div style="font-size: 11px; color: #8c8c8c; margin-top: 6px">
-              <span v-if="formData.humanizeCursor === false"
-                >使用 Playwright 原生點擊，性能最好，但可能被檢測為自動化</span
-              >
-              <span v-else-if="formData.humanizeCursor === true"
-                >使用專案優化的 ghost-cursor
-                模擬人類鼠標軌跡（如不會點擊正中心），性能稍差</span
-              >
-              <span v-else
-                >使用 Camoufox 內置的 humanize
-                功能，性能與擬人化的平衡選擇</span
-              >
+              {{ $t("browser.humanizeCursor") }}
             </div>
           </div>
         </a-col>
@@ -173,22 +163,28 @@ const handleSave = async () => {
       <!-- 全域代理設定（折疊面板） -->
       <div style="margin-top: 16px">
         <a-collapse>
-          <a-collapse-panel key="proxy" header="全域代理設定">
+          <a-collapse-panel key="proxy" :header="$t('browser.proxy')">
             <div style="font-size: 12px; color: #8c8c8c; margin-bottom: 16px">
-              如果實例沒有獨立配置代理，將使用此全域代理配置
+              {{ $t("browser.proxy") }}
             </div>
 
             <!-- 是否啟用代理 -->
             <div style="margin-bottom: 16px">
               <a-switch v-model:checked="formData.proxyEnable" />
               <span style="margin-left: 8px">
-                {{ formData.proxyEnable ? "已啟用全域代理" : "未啟用全域代理" }}
+                {{
+                  formData.proxyEnable
+                    ? $t("common.enable")
+                    : $t("common.disable")
+                }}
               </span>
             </div>
 
             <!-- 代理類型 -->
             <div style="margin-bottom: 16px" v-if="formData.proxyEnable">
-              <div style="font-weight: 600; margin-bottom: 8px">代理類型</div>
+              <div style="font-weight: 600; margin-bottom: 8px">
+                {{ $t("browser.proxyType") }}
+              </div>
               <a-segmented
                 v-model:value="formData.proxyType"
                 block
@@ -204,11 +200,11 @@ const handleSave = async () => {
               <a-col :xs="24" :md="12">
                 <div style="margin-bottom: 16px">
                   <div style="font-weight: 600; margin-bottom: 8px">
-                    代理主機
+                    {{ $t("browser.proxyHost") }}
                   </div>
                   <a-input
                     v-model:value="formData.proxyHost"
-                    placeholder="例如: 127.0.0.1"
+                    :placeholder="$t('browser.proxyHost')"
                   />
                 </div>
               </a-col>
@@ -217,14 +213,14 @@ const handleSave = async () => {
               <a-col :xs="24" :md="12">
                 <div style="margin-bottom: 16px">
                   <div style="font-weight: 600; margin-bottom: 8px">
-                    代理埠號
+                    {{ $t("browser.proxyPort") }}
                   </div>
                   <a-input-number
                     v-model:value="formData.proxyPort"
                     :min="1"
                     :max="65535"
                     style="width: 100%"
-                    placeholder="例如: 7890"
+                    :placeholder="$t('browser.proxyPort')"
                   />
                 </div>
               </a-col>
@@ -232,10 +228,12 @@ const handleSave = async () => {
 
             <!-- 是否需要驗證 -->
             <div style="margin-bottom: 16px" v-if="formData.proxyEnable">
-              <div style="font-weight: 600; margin-bottom: 8px">代理認證</div>
+              <div style="font-weight: 600; margin-bottom: 8px">
+                {{ $t("browser.proxyAuth") }}
+              </div>
               <a-switch v-model:checked="formData.proxyAuth" />
               <span style="margin-left: 8px">
-                {{ formData.proxyAuth ? "需要認證" : "無需認證" }}
+                {{ formData.proxyAuth ? $t("common.yes") : $t("common.no") }}
               </span>
             </div>
 
@@ -246,10 +244,12 @@ const handleSave = async () => {
               <!-- 用户名 -->
               <a-col :xs="24" :md="12">
                 <div style="margin-bottom: 16px">
-                  <div style="font-weight: 600; margin-bottom: 8px">用户名</div>
+                  <div style="font-weight: 600; margin-bottom: 8px">
+                    {{ $t("browser.proxyUser") }}
+                  </div>
                   <a-input
                     v-model:value="formData.proxyUser"
-                    placeholder="請輸入用戶名"
+                    :placeholder="$t('browser.proxyUser')"
                   />
                 </div>
               </a-col>
@@ -257,10 +257,12 @@ const handleSave = async () => {
               <!-- 密码 -->
               <a-col :xs="24" :md="12">
                 <div style="margin-bottom: 16px">
-                  <div style="font-weight: 600; margin-bottom: 8px">密码</div>
+                  <div style="font-weight: 600; margin-bottom: 8px">
+                    {{ $t("browser.proxyPass") }}
+                  </div>
                   <a-input-password
                     v-model:value="formData.proxyPasswd"
-                    placeholder="請輸入密碼"
+                    :placeholder="$t('browser.proxyPass')"
                   />
                 </div>
               </a-col>
@@ -268,9 +270,12 @@ const handleSave = async () => {
           </a-collapse-panel>
 
           <!-- CSS 性能优化 -->
-          <a-collapse-panel key="cssInject" header="CSS 效能最佳化注入">
+          <a-collapse-panel
+            key="cssInject"
+            :header="$t('browser.cssOptimization')"
+          >
             <a-alert
-              message="⚡ 適用於無 GPU 的伺服器環境，透過禁用網頁特效來降低 CPU 壓力"
+              :message="$t('browser.cssOptimization')"
               type="info"
               show-icon
               style="margin-bottom: 16px"
@@ -294,17 +299,14 @@ const handleSave = async () => {
               >
                 <div>
                   <div style="font-weight: 600; margin-bottom: 4px">
-                    禁用網頁動畫
+                    {{ $t("browser.cssAnimation") }}
                   </div>
                   <div style="font-size: 12px; color: #8c8c8c">
-                    移除 transition 和 animation，顯著降低 CPU 持續佔用
+                    {{ $t("browser.cssAnimation") }}
                   </div>
-                  <a-tag color="green" style="margin-top: 6px">風險：低</a-tag>
-                  <span
-                    style="font-size: 11px; color: #389e0d; margin-left: 8px"
-                  >
-                    幾乎不影響瀏覽器指紋，但可能導致部分網頁佈局異常
-                  </span>
+                  <a-tag color="green" style="margin-top: 6px">{{
+                    $t("common.enable")
+                  }}</a-tag>
                 </div>
                 <a-switch v-model:checked="formData.cssAnimation" />
               </div>
@@ -328,17 +330,14 @@ const handleSave = async () => {
               >
                 <div>
                   <div style="font-weight: 600; margin-bottom: 4px">
-                    禁用濾鏡和陰影
+                    {{ $t("browser.cssFilter") }}
                   </div>
                   <div style="font-size: 12px; color: #8c8c8c">
-                    移除 blur(模糊)、box-shadow(陰影) 等複雜渲染
+                    {{ $t("browser.cssFilter") }}
                   </div>
-                  <a-tag color="orange" style="margin-top: 6px">風險：中</a-tag>
-                  <span
-                    style="font-size: 11px; color: #faad14; margin-left: 8px"
-                  >
-                    介面會變醜，少數反爬可能偵測樣式計算結果
-                  </span>
+                  <a-tag color="orange" style="margin-top: 6px">{{
+                    $t("common.disable")
+                  }}</a-tag>
                 </div>
                 <a-switch v-model:checked="formData.cssFilter" />
               </div>
@@ -362,15 +361,14 @@ const handleSave = async () => {
               >
                 <div>
                   <div style="font-weight: 600; margin-bottom: 4px">
-                    降低字體渲染品質
+                    {{ $t("browser.cssFont") }}
                   </div>
                   <div style="font-size: 12px; color: #8c8c8c">
-                    強制使用極速渲染模式，微量減少 CPU 繪圖壓力
+                    {{ $t("browser.cssFont") }}
                   </div>
-                  <a-tag color="red" style="margin-top: 6px">⚠️ 風險：高</a-tag>
-                  <div style="font-size: 11px; color: #cf1322; margin-top: 4px">
-                    會導致文字邊緣有鋸齒，且可能導致字體指紋與標準瀏覽器不符，易被進階反爬識別
-                  </div>
+                  <a-tag color="red" style="margin-top: 6px"
+                    >⚠️ {{ $t("common.disable") }}</a-tag
+                  >
                 </div>
                 <a-switch v-model:checked="formData.cssFont" />
               </div>
@@ -381,7 +379,9 @@ const handleSave = async () => {
 
       <!-- 儲存按鈕（右下角） -->
       <div style="display: flex; justify-content: flex-end; margin-top: 24px">
-        <a-button type="primary" @click="handleSave"> 儲存設定 </a-button>
+        <a-button type="primary" @click="handleSave">
+          {{ $t("common.saveSettings") }}
+        </a-button>
       </div>
     </a-card>
   </a-layout>

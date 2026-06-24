@@ -1,7 +1,10 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from "vue";
+import { useI18n } from "vue-i18n";
 import { useSystemStore } from "@/stores/system";
 import { useSettingsStore } from "@/stores/settings";
+
+const { t } = useI18n();
 import {
   DesktopOutlined,
   PieChartOutlined,
@@ -63,9 +66,10 @@ const formatUptime = (seconds) => {
   const d = Math.floor(seconds / (3600 * 24));
   const h = Math.floor((seconds % (3600 * 24)) / 3600);
   const m = Math.floor((seconds % 3600) / 60);
-  if (d > 0) return `${d}天 ${h}小時 ${m}分`;
-  if (h > 0) return `${h}小時 ${m}分`;
-  return `${m}分`;
+  if (d > 0)
+    return `${d}${t("dash.days")} ${h}${t("dash.hours")} ${m}${t("dash.mins")}`;
+  if (h > 0) return `${h}${t("dash.hours")} ${m}${t("dash.mins")}`;
+  return `${m}${t("dash.mins")}`;
 };
 
 const formatMemory = (mb) => {
@@ -83,14 +87,14 @@ const getLoadColor = (usage) => {
 };
 
 // 狀態映射
-        const getStatusConfig = (status) => {
-            const map = {
-                'normal': { color: 'green', text: '正常模式 (Normal)' },
-                'headless': { color: 'blue', text: '無頭模式 (Headless)' },
-                'xvfb': { color: 'purple', text: '虛擬顯示 (Xvfb)' }
-            };
-            return map[status] || { color: 'red', text: '未運行' };
-        };
+const getStatusConfig = (status) => {
+  const map = {
+    normal: { color: "green", text: t("dash.normalMode") },
+    headless: { color: "blue", text: t("dash.headlessMode") },
+    xvfb: { color: "purple", text: t("dash.xvfbMode") },
+  };
+  return map[status] || { color: "red", text: t("dash.notRunning") };
+};
 
 onMounted(() => {
   refreshData();
@@ -113,17 +117,17 @@ onUnmounted(() => {
       closable
     >
       <template #message>
-        <span style="font-weight: 600">⚠️ 安全模式</span>
+        <span style="font-weight: 600">⚠️ {{ $t("dash.safeMode") }}</span>
       </template>
       <template #description>
         <div>
           <p style="margin-bottom: 8px">
-            服務因初始化失敗進入安全模式，OpenAI API 不可用。
+            {{ $t("dash.safeModeReasonCN") }}
           </p>
           <p style="margin-bottom: 8px; color: #cf1322">
             <b>原因：</b>{{ systemStore.safeMode.reason }}
           </p>
-          <p style="margin: 0">請前往「系統設定」修改正確的配置後重啟服務。</p>
+          <p style="margin: 0">{{ $t("dash.safeModeReason2CN") }}</p>
         </div>
       </template>
     </a-alert>
@@ -132,18 +136,22 @@ onUnmounted(() => {
     <a-row :gutter="[16, 16]" style="margin-bottom: 24px">
       <!-- 系統資訊卡片 -->
       <a-col :xs="24" :md="12">
-        <a-card title="系統狀態" :bordered="false" style="height: 100%">
+        <a-card
+          :title="$t('dash.systemStatus')"
+          :bordered="false"
+          style="height: 100%"
+        >
           <a-space direction="vertical" style="width: 100%" size="middle">
             <div style="display: flex; justify-content: space-between">
-              <span> <DesktopOutlined /> 系統版本: </span>
+              <span> <DesktopOutlined /> {{ $t("dash.systemVersion") }}: </span>
               <b>{{ systemStore.systemVersion }}</b>
             </div>
             <div style="display: flex; justify-content: space-between">
-              <span> <FieldTimeOutlined /> 執行時間: </span>
+              <span> <FieldTimeOutlined /> {{ $t("dash.uptime") }}: </span>
               <b>{{ formatUptime(systemStore.uptime) }}</b>
             </div>
             <div style="display: flex; justify-content: space-between">
-              <span> <ChromeOutlined /> 狀態: </span>
+              <span> <ChromeOutlined /> {{ $t("dash.status") }}: </span>
               <a-tag :color="getStatusConfig(systemStore.status).color">
                 {{ getStatusConfig(systemStore.status).text }}
               </a-tag>
@@ -157,7 +165,7 @@ onUnmounted(() => {
                   margin-bottom: 4px;
                 "
               >
-                <span> <LineChartOutlined /> CPU 使用率: </span>
+                <span> <LineChartOutlined /> {{ $t("dash.cpuUsage") }}: </span>
                 <span>{{ systemStore.cpuUsage }}%</span>
               </div>
               <a-progress
@@ -175,7 +183,9 @@ onUnmounted(() => {
                   margin-bottom: 4px;
                 "
               >
-                <span> <PieChartOutlined /> 記憶體使用: </span>
+                <span>
+                  <PieChartOutlined /> {{ $t("dash.memoryUsage") }}:
+                </span>
                 <span
                   >{{ formatMemory(systemStore.memoryUsage.used) }} /
                   {{ formatMemory(systemStore.memoryUsage.total) }}</span
@@ -205,32 +215,43 @@ onUnmounted(() => {
 
       <!-- 统计数据卡片 -->
       <a-col :xs="24" :md="12">
-        <a-card title="業務統計" :bordered="false" style="height: 100%">
+        <a-card
+          :title="$t('dash.bizStats')"
+          :bordered="false"
+          style="height: 100%"
+        >
           <a-row :gutter="16" style="margin-bottom: 24px">
             <a-col :span="12">
               <a-statistic
-                title="視窗數量"
+                :title="$t('dash.windowCount')"
                 :value="systemStore.stats.workers || 0"
               >
                 <template #suffix>
-                  <span style="font-size: 14px; color: #8c8c8c">個</span>
+                  <span style="font-size: 14px; color: #8c8c8c">{{
+                    $t("dash.unit")
+                  }}</span>
                 </template>
               </a-statistic>
             </a-col>
             <a-col :span="12">
               <a-statistic
-                title="實例數量"
+                :title="$t('dash.instanceCount')"
                 :value="systemStore.stats.instances || 0"
               >
                 <template #suffix>
-                  <span style="font-size: 14px; color: #8c8c8c">個</span>
+                  <span style="font-size: 14px; color: #8c8c8c">{{
+                    $t("dash.unit")
+                  }}</span>
                 </template>
               </a-statistic>
             </a-col>
           </a-row>
           <a-row :gutter="16">
             <a-col :span="12">
-              <a-statistic title="正在進行" :value="queueStats.processing">
+              <a-statistic
+                :title="$t('dash.processing')"
+                :value="queueStats.processing"
+              >
                 <template #suffix>
                   <span style="font-size: 14px; color: #8c8c8c"
                     >/ {{ queueStats.total }}</span
@@ -239,7 +260,10 @@ onUnmounted(() => {
               </a-statistic>
             </a-col>
             <a-col :span="12">
-              <a-statistic title="等待排隊" :value="queueStats.waiting">
+              <a-statistic
+                :title="$t('dash.queued')"
+                :value="queueStats.waiting"
+              >
                 <template #suffix>
                   <span style="font-size: 14px; color: #8c8c8c"
                     >/ {{ queueStats.total }}</span
@@ -251,7 +275,7 @@ onUnmounted(() => {
           <a-row :gutter="16" style="margin-top: 16px">
             <a-col :span="12">
               <a-statistic
-                title="今日成功"
+                :title="$t('dash.todaySuccess')"
                 :value="systemStore.stats.success || 0"
               >
                 <template #prefix>
@@ -261,7 +285,7 @@ onUnmounted(() => {
             </a-col>
             <a-col :span="12">
               <a-statistic
-                title="今日失敗"
+                :title="$t('dash.todayFailed')"
                 :value="systemStore.stats.failed || 0"
               >
                 <template #prefix>
@@ -276,14 +300,15 @@ onUnmounted(() => {
 
     <!-- 任務隊列列表 -->
     <a-card
-      title="任務隊列即時監控"
+      :title="$t('dash.queueMonitor')"
       :bordered="false"
       style="width: 100%"
       :bodyStyle="{ padding: '0 24px' }"
     >
       <template #extra>
         <div style="color: #8c8c8c; font-size: 12px">
-          <SyncOutlined :spin="true" style="margin-right: 4px" /> 即時刷新中
+          <SyncOutlined :spin="true" style="margin-right: 4px" />
+          {{ $t("dash.refreshing") }}
         </div>
       </template>
       <a-list item-layout="horizontal" :data-source="queueData">
@@ -298,19 +323,27 @@ onUnmounted(() => {
               </template>
             </a-list-item-meta>
 
-                <div>
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
-                        <span>
-                            <SyncOutlined :spin="true" style="margin-right: 4px" /> 即時刷新中
-                        </div>
-                    </div>
+            <div>
+              <div
+                style="
+                  display: flex;
+                  justify-content: space-between;
+                  margin-bottom: 4px;
+                "
+              >
+                <span>
+                  <SyncOutlined :spin="true" style="margin-right: 4px" />
+                  {{ $t("dash.refreshing") }}
+                </span>
+              </div>
+            </div>
           </a-list-item>
         </template>
         <div
           v-if="queueData.length === 0"
           style="text-align: center; padding: 24px; color: #8c8c8c"
         >
-          暫無任務
+          {{ $t("dash.noTasks") }}
         </div>
       </a-list>
     </a-card>

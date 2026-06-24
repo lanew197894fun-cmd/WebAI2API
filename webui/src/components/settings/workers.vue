@@ -1,9 +1,11 @@
 <script setup>
 import { ref, onMounted, computed } from "vue";
+import { useI18n } from "vue-i18n";
 import { useSettingsStore } from "@/stores/settings";
 import { Modal } from "ant-design-vue";
 
 const settingsStore = useSettingsStore();
+const { t } = useI18n();
 
 const poolConfig = computed({
   get: () => settingsStore.poolConfig,
@@ -31,7 +33,7 @@ const adapterOptions = computed(() => {
   }));
   // 將 Merge 選項放在第一個位置
   if (!options.find((o) => o.value === "merge")) {
-    options.unshift({ label: "Merge（聚合模式）", value: "merge" });
+    options.unshift({ label: t("adapters.mergeMode"), value: "merge" });
   }
   return options;
 });
@@ -48,7 +50,7 @@ const mergeableAdapterOptions = computed(() => {
 
 // 輔助函數：根據適配器 ID 獲取 displayName
 const getAdapterDisplayName = (id) => {
-  if (id === "merge") return "Merge（聚合模式）";
+  if (id === "merge") return t("adapters.mergeMode");
   const adapter = settingsStore.adaptersMeta.find((a) => a.id === id);
   return adapter?.displayName || id;
 };
@@ -56,27 +58,27 @@ const getAdapterDisplayName = (id) => {
 // 實例列表表格列定義
 const columns = [
   {
-    title: "實例名稱",
+    title: t("workers.instanceName"),
     dataIndex: "name",
     key: "name",
   },
   {
-    title: "Worker 數量",
+    title: t("workers.workers"),
     dataIndex: "workerCount",
     key: "workerCount",
   },
   {
-    title: "代理",
+    title: t("browser.proxy"),
     dataIndex: "proxy",
     key: "proxy",
   },
   {
-    title: "資料標記",
+    title: t("workers.instanceName"),
     key: "userDataMark",
     dataIndex: "userDataMark",
   },
   {
-    title: "操作",
+    title: t("common.operation"),
     key: "action",
   },
 ];
@@ -154,11 +156,13 @@ const handleBatchProxySave = async () => {
 // 批量刪除
 const handleBatchDelete = () => {
   Modal.confirm({
-    title: "批量刪除實例",
-    content: `確定要刪除選中的 ${selectedRowKeys.value.length} 個實例嗎？此操作不可撤銷。`,
-    okText: "刪除",
+    title: t("workers.deleteInstance"),
+    content: t("common.confirmDeleteItems", {
+      n: selectedRowKeys.value.length,
+    }),
+    okText: t("common.delete"),
     okType: "danger",
-    cancelText: "取消",
+    cancelText: t("common.cancel"),
     async onOk() {
       const newList = (instanceData.value || []).filter(
         (inst) => !selectedRowKeys.value.includes(getInstanceKey(inst)),
@@ -340,15 +344,17 @@ const handleRemoveWorker = (index) => {
 <template>
   <a-layout style="background: transparent">
     <a-card
-      title="負載均衡"
+      :title="$t('workers.poolConfig')"
       :bordered="false"
       style="width: 100%; margin-bottom: 10px"
     >
       <!-- 調度策略 -->
       <div style="margin-bottom: 24px">
-        <div style="font-weight: 600; margin-bottom: 8px">調度策略</div>
+        <div style="font-weight: 600; margin-bottom: 8px">
+          {{ $t("workers.strategy") }}
+        </div>
         <div style="font-size: 12px; color: #8c8c8c; margin-bottom: 12px">
-          選擇任務分配到工作實例的調度演算法
+          {{ $t("workers.strategy") }}
         </div>
         <a-segmented
           v-model:value="poolConfig.strategy"
@@ -363,9 +369,11 @@ const handleRemoveWorker = (index) => {
 
       <!-- 生成等待超時 -->
       <div style="margin-bottom: 24px">
-        <div style="font-weight: 600; margin-bottom: 8px">生成等待超時</div>
+        <div style="font-weight: 600; margin-bottom: 8px">
+          {{ $t("workers.waitTimeout") }}
+        </div>
         <div style="font-size: 12px; color: #8c8c8c; margin-bottom: 12px">
-          等待 AI 生成結果的最長時間，單位：秒（預設 120 秒）
+          {{ $t("workers.waitTimeout") }}
         </div>
         <a-input-number
           v-model:value="poolConfig.waitTimeout"
@@ -373,26 +381,26 @@ const handleRemoveWorker = (index) => {
           :max="3600"
           :step="30"
           style="width: 100%"
-          placeholder="請輸入超時秒數"
+          :placeholder="$t('workers.waitTimeout')"
         >
-          <template #addonAfter>秒</template>
+          <template #addonAfter>{{ $t("common.items") }}</template>
         </a-input-number>
       </div>
 
       <!-- 故障轉移（折疊面板） -->
       <div style="margin-bottom: 24px">
         <a-collapse>
-          <a-collapse-panel key="failover" header="故障轉移">
+          <a-collapse-panel key="failover" :header="$t('workers.failover')">
             <a-row :gutter="16">
               <a-col :xs="24" :md="12">
                 <div style="margin-bottom: 8px">
                   <div style="font-weight: 600; margin-bottom: 8px">
-                    啟用故障轉移
+                    {{ $t("workers.failover") }}
                   </div>
                   <div
                     style="font-size: 12px; color: #8c8c8c; margin-bottom: 12px"
                   >
-                    啟用後，任務失敗時會自動切換到其他可用實例重試
+                    {{ $t("workers.failover") }}
                   </div>
                   <a-switch v-model:checked="poolConfig.failover.enabled" />
                 </div>
@@ -401,12 +409,12 @@ const handleRemoveWorker = (index) => {
               <a-col :xs="24" :md="12">
                 <div style="margin-bottom: 8px">
                   <div style="font-weight: 600; margin-bottom: 8px">
-                    重試次數
+                    {{ $t("workers.maxRetries") }}
                   </div>
                   <div
                     style="font-size: 12px; color: #8c8c8c; margin-bottom: 12px"
                   >
-                    故障轉移時最大重試次數，範圍 1-10
+                    {{ $t("workers.maxRetries") }}
                   </div>
                   <a-input-number
                     v-model:value="poolConfig.failover.maxRetries"
@@ -414,7 +422,7 @@ const handleRemoveWorker = (index) => {
                     :max="10"
                     :disabled="!poolConfig.failover.enabled"
                     style="width: 100%"
-                    placeholder="請輸入重試次數"
+                    :placeholder="$t('workers.maxRetries')"
                   />
                 </div>
               </a-col>
@@ -426,12 +434,12 @@ const handleRemoveWorker = (index) => {
               <a-col :xs="24" :md="12">
                 <div style="margin-bottom: 8px">
                   <div style="font-weight: 600; margin-bottom: 8px">
-                    圖片下載重試
+                    {{ $t("workers.imgRetry") }}
                   </div>
                   <div
                     style="font-size: 12px; color: #8c8c8c; margin-bottom: 12px"
                   >
-                    啟用後，圖片/視頻下載失敗時會自動重試下載（不重新生成）
+                    {{ $t("workers.imgRetry") }}
                   </div>
                   <a-switch v-model:checked="poolConfig.failover.imgDlRetry" />
                 </div>
@@ -440,12 +448,12 @@ const handleRemoveWorker = (index) => {
               <a-col :xs="24" :md="12">
                 <div style="margin-bottom: 8px">
                   <div style="font-weight: 600; margin-bottom: 8px">
-                    下載重試次數
+                    {{ $t("workers.imgMaxRetries") }}
                   </div>
                   <div
                     style="font-size: 12px; color: #8c8c8c; margin-bottom: 12px"
                   >
-                    圖片下載失敗時的最大重試次數，範圍 1-10
+                    {{ $t("workers.imgMaxRetries") }}
                   </div>
                   <a-input-number
                     v-model:value="poolConfig.failover.imgDlRetryMaxRetries"
@@ -453,7 +461,7 @@ const handleRemoveWorker = (index) => {
                     :max="10"
                     :disabled="!poolConfig.failover.imgDlRetry"
                     style="width: 100%"
-                    placeholder="請輸入下載重試次數"
+                    :placeholder="$t('workers.imgMaxRetries')"
                   />
                 </div>
               </a-col>
@@ -464,7 +472,9 @@ const handleRemoveWorker = (index) => {
 
       <!-- 儲存按鈕 -->
       <div style="display: flex; justify-content: flex-end; margin-top: 24px">
-        <a-button type="primary" @click="handleSavePool"> 儲存設定 </a-button>
+        <a-button type="primary" @click="handleSavePool">
+          {{ $t("common.saveSettings") }}
+        </a-button>
       </div>
     </a-card>
 
@@ -478,20 +488,20 @@ const handleRemoveWorker = (index) => {
             align-items: center;
           "
         >
-          <span>實例列表</span>
+          <span>{{ $t("workers.title") }}</span>
           <a-space>
             <a-button v-if="selectedRowKeys.length > 0" @click="openBatchProxy">
-              批量設定代理 ({{ selectedRowKeys.length }})
+              {{ $t("browser.proxy") }} ({{ selectedRowKeys.length }})
             </a-button>
             <a-button
               v-if="selectedRowKeys.length > 0"
               danger
               @click="handleBatchDelete"
             >
-              批量刪除 ({{ selectedRowKeys.length }})
+              {{ $t("common.delete") }} ({{ selectedRowKeys.length }})
             </a-button>
             <a-button type="primary" @click="handleCreateInstance">
-              創建實例
+              {{ $t("workers.addInstance") }}
             </a-button>
           </a-space>
         </div>
@@ -519,16 +529,18 @@ const handleRemoveWorker = (index) => {
           <!-- 代理狀態 -->
           <template v-else-if="column.key === 'proxy'">
             <a-tag :color="record.proxy ? 'green' : 'default'">
-              {{ record.proxy ? "已啟用" : "未啟用" }}
+              {{ record.proxy ? $t("common.enable") : $t("common.disable") }}
             </a-tag>
           </template>
 
           <!-- 操作列 -->
           <template v-else-if="column.key === 'action'">
             <span>
-              <a @click="handleEdit(record)">編輯</a>
+              <a @click="handleEdit(record)">{{ $t("common.detail") }}</a>
               <a-divider type="vertical" />
-              <a style="color: #ff4d4f" @click="handleDelete(record)">刪除</a>
+              <a style="color: #ff4d4f" @click="handleDelete(record)">{{
+                $t("common.delete")
+              }}</a>
             </span>
           </template>
         </template>
@@ -540,8 +552,8 @@ const handleRemoveWorker = (index) => {
       v-model:open="drawerOpen"
       :title="
         editingInstance === null
-          ? '創建實例'
-          : `編輯實例 - ${editingInstance.name}`
+          ? $t('workers.addInstance')
+          : $t('workers.title') + ' - ' + editingInstance.name
       "
       placement="right"
       width="500"
@@ -549,40 +561,51 @@ const handleRemoveWorker = (index) => {
       <div style="margin-bottom: 24px">
         <!-- 實例名稱 -->
         <div style="margin-bottom: 16px">
-          <div style="font-weight: 600; margin-bottom: 4px">實例名稱</div>
-          <div style="font-size: 12px; color: #ff4d4f; margin-bottom: 8px">
-            * 名稱必須全局唯一，不可重複
+          <div style="font-weight: 600; margin-bottom: 4px">
+            {{ $t("workers.instanceName") }}
           </div>
-          <a-input v-model:value="editForm.name" placeholder="請輸入實例名稱" />
+          <div style="font-size: 12px; color: #ff4d4f; margin-bottom: 8px">
+            * {{ $t("workers.instanceName") }}
+          </div>
+          <a-input
+            v-model:value="editForm.name"
+            :placeholder="$t('workers.instanceName')"
+          />
         </div>
 
         <!-- 資料標記 -->
         <div style="margin-bottom: 16px">
-          <div style="font-weight: 600; margin-bottom: 4px">資料標記</div>
+          <div style="font-weight: 600; margin-bottom: 4px">
+            {{ $t("workers.instanceName") }}
+          </div>
           <div style="font-size: 12px; color: #8c8c8c; margin-bottom: 8px">
-            用於區分實例資料存儲的資料夾名稱 (userDataMark)
+            {{ $t("workers.instanceName") }}
           </div>
           <a-input
             v-model:value="editForm.userDataMark"
-            placeholder="請輸入資料標記，如: main-gemini"
+            :placeholder="$t('workers.instanceName')"
           />
         </div>
 
         <!-- 代理設定（折疊面板） -->
         <div style="margin-bottom: 16px">
           <a-collapse>
-            <a-collapse-panel key="proxy" header="代理設定">
+            <a-collapse-panel key="proxy" :header="$t('browser.proxy')">
               <!-- 是否啟用代理 -->
               <div style="margin-bottom: 16px">
                 <a-switch v-model:checked="editForm.proxy" />
                 <span style="margin-left: 8px">
-                  {{ editForm.proxy ? "已啟用代理" : "未啟用代理" }}
+                  {{
+                    editForm.proxy ? $t("common.enable") : $t("common.disable")
+                  }}
                 </span>
               </div>
 
               <!-- 代理類型 -->
               <div style="margin-bottom: 16px" v-if="editForm.proxy">
-                <div style="font-weight: 600; margin-bottom: 8px">代理類型</div>
+                <div style="font-weight: 600; margin-bottom: 8px">
+                  {{ $t("browser.proxyType") }}
+                </div>
                 <a-segmented
                   v-model:value="editForm.proxyType"
                   block
@@ -597,32 +620,36 @@ const handleRemoveWorker = (index) => {
               <!-- 伺服器地址 -->
               <div style="margin-bottom: 16px" v-if="editForm.proxy">
                 <div style="font-weight: 600; margin-bottom: 8px">
-                  伺服器地址
+                  {{ $t("browser.proxyHost") }}
                 </div>
                 <a-input
                   v-model:value="editForm.proxyHost"
-                  placeholder="例如: 127.0.0.1"
+                  :placeholder="$t('browser.proxyHost')"
                 />
               </div>
 
               <!-- 埠號 -->
               <div style="margin-bottom: 16px" v-if="editForm.proxy">
-                <div style="font-weight: 600; margin-bottom: 8px">埠號</div>
+                <div style="font-weight: 600; margin-bottom: 8px">
+                  {{ $t("browser.proxyPort") }}
+                </div>
                 <a-input-number
                   v-model:value="editForm.proxyPort"
                   :min="1"
                   :max="65535"
                   style="width: 100%"
-                  placeholder="例如: 1080"
+                  :placeholder="$t('browser.proxyPort')"
                 />
               </div>
 
               <!-- 是否需要驗證 -->
               <div style="margin-bottom: 16px" v-if="editForm.proxy">
-                <div style="font-weight: 600; margin-bottom: 8px">身份驗證</div>
+                <div style="font-weight: 600; margin-bottom: 8px">
+                  {{ $t("browser.proxyAuth") }}
+                </div>
                 <a-switch v-model:checked="editForm.proxyAuth" />
                 <span style="margin-left: 8px">
-                  {{ editForm.proxyAuth ? "需要驗證" : "無需驗證" }}
+                  {{ editForm.proxyAuth ? $t("common.yes") : $t("common.no") }}
                 </span>
               </div>
 
@@ -631,10 +658,12 @@ const handleRemoveWorker = (index) => {
                 style="margin-bottom: 16px"
                 v-if="editForm.proxy && editForm.proxyAuth"
               >
-                <div style="font-weight: 600; margin-bottom: 8px">用戶名</div>
+                <div style="font-weight: 600; margin-bottom: 8px">
+                  {{ $t("browser.proxyUser") }}
+                </div>
                 <a-input
                   v-model:value="editForm.proxyUsername"
-                  placeholder="請輸入用戶名"
+                  :placeholder="$t('browser.proxyUser')"
                 />
               </div>
 
@@ -643,10 +672,12 @@ const handleRemoveWorker = (index) => {
                 style="margin-bottom: 16px"
                 v-if="editForm.proxy && editForm.proxyAuth"
               >
-                <div style="font-weight: 600; margin-bottom: 8px">密碼</div>
+                <div style="font-weight: 600; margin-bottom: 8px">
+                  {{ $t("browser.proxyPass") }}
+                </div>
                 <a-input-password
                   v-model:value="editForm.proxyPassword"
-                  placeholder="請輸入密碼"
+                  :placeholder="$t('browser.proxyPass')"
                 />
               </div>
             </a-collapse-panel>
@@ -663,9 +694,9 @@ const handleRemoveWorker = (index) => {
               margin-bottom: 8px;
             "
           >
-            <div style="font-weight: 600">Worker 列表</div>
+            <div style="font-weight: 600">{{ $t("workers.workers") }}</div>
             <a-button size="small" type="primary" @click="handleAddWorker">
-              添加 Worker
+              {{ $t("workers.addInstance") }}
             </a-button>
           </div>
           <a-list
@@ -676,24 +707,30 @@ const handleRemoveWorker = (index) => {
             <template #renderItem="{ item, index }">
               <a-list-item>
                 <template #actions>
-                  <a @click="handleEditWorker(index)">編輯</a>
-                  <a style="color: #ff4d4f" @click="handleRemoveWorker(index)"
-                    >刪除</a
+                  <a @click="handleEditWorker(index)">{{
+                    $t("common.detail")
+                  }}</a>
+                  <a
+                    style="color: #ff4d4f"
+                    @click="handleRemoveWorker(index)"
+                    >{{ $t("common.delete") }}</a
                   >
                 </template>
                 <div>
                   <div style="font-weight: 600">{{ item.name }}</div>
                   <div style="font-size: 12px; color: #8c8c8c">
-                    類型: {{ getAdapterDisplayName(item.type) }}
+                    {{ $t("workers.adapter") }}:
+                    {{ getAdapterDisplayName(item.type) }}
                     <span v-if="item.type === 'merge'">
-                      | 聚合:
+                      | {{ $t("adapters.mergeMode") }}:
                       {{
                         item.mergeTypes
                           ?.map(getAdapterDisplayName)
-                          .join(", ") || "無"
+                          .join(", ") || $t("common.no")
                       }}
                       <span v-if="item.mergeMonitor">
-                        | 監控: {{ getAdapterDisplayName(item.mergeMonitor) }}
+                        | {{ $t("adapters.adapterConfig") }}:
+                        {{ getAdapterDisplayName(item.mergeMonitor) }}
                       </span>
                     </span>
                   </div>
@@ -707,10 +744,12 @@ const handleRemoveWorker = (index) => {
       <!-- 抽屜底部儲存按鈕 -->
       <template #footer>
         <div style="text-align: right">
-          <a-button style="margin-right: 8px" @click="drawerOpen = false"
-            >取消</a-button
-          >
-          <a-button type="primary" @click="handleSaveEdit">儲存</a-button>
+          <a-button style="margin-right: 8px" @click="drawerOpen = false">{{
+            $t("common.cancel")
+          }}</a-button>
+          <a-button type="primary" @click="handleSaveEdit">{{
+            $t("common.save")
+          }}</a-button>
         </div>
       </template>
     </a-drawer>
@@ -718,21 +757,32 @@ const handleRemoveWorker = (index) => {
     <!-- Worker配置模態框 -->
     <a-modal
       v-model:open="workerFormVisible"
-      :title="editingWorkerIndex === -1 ? '添加 Worker' : '編輯 Worker'"
-      okText="確定"
-      cancelText="取消"
+      :title="
+        editingWorkerIndex === -1
+          ? $t('workers.addInstance')
+          : $t('workers.title')
+      "
+      :okText="$t('common.ok')"
+      :cancelText="$t('common.cancel')"
       @ok="handleSaveWorker"
     >
       <div style="margin-bottom: 16px">
-        <div style="font-weight: 600; margin-bottom: 4px">Worker 名稱</div>
-        <div style="font-size: 12px; color: #ff4d4f; margin-bottom: 8px">
-          * 名稱必須全局唯一，不可重複
+        <div style="font-weight: 600; margin-bottom: 4px">
+          {{ $t("workers.instanceName") }}
         </div>
-        <a-input v-model:value="workerForm.name" placeholder="例如: default" />
+        <div style="font-size: 12px; color: #ff4d4f; margin-bottom: 8px">
+          * {{ $t("workers.instanceName") }}
+        </div>
+        <a-input
+          v-model:value="workerForm.name"
+          :placeholder="$t('workers.instanceName')"
+        />
       </div>
 
       <div style="margin-bottom: 16px">
-        <div style="font-weight: 600; margin-bottom: 8px">適配器類型</div>
+        <div style="font-weight: 600; margin-bottom: 8px">
+          {{ $t("workers.adapter") }}
+        </div>
         <a-select
           v-model:value="workerForm.type"
           style="width: 100%"
@@ -743,32 +793,36 @@ const handleRemoveWorker = (index) => {
       <!-- Merge 模式額外配置 -->
       <template v-if="workerForm.type === 'merge'">
         <div style="margin-bottom: 16px">
-          <div style="font-weight: 600; margin-bottom: 4px">聚合類型</div>
+          <div style="font-weight: 600; margin-bottom: 4px">
+            {{ $t("workers.adapter") }}
+          </div>
           <div style="font-size: 12px; color: #8c8c8c; margin-bottom: 8px">
-            選擇要聚合的後端適配器（可多選）
+            {{ $t("workers.adapter") }}
           </div>
           <a-select
             v-model:value="workerForm.mergeTypes"
             mode="multiple"
             style="width: 100%"
-            placeholder="選擇要聚合的適配器"
+            :placeholder="$t('workers.adapter')"
             :options="mergeableAdapterOptions"
           >
           </a-select>
         </div>
 
         <div style="margin-bottom: 16px">
-          <div style="font-weight: 600; margin-bottom: 4px">空閒監控後端</div>
+          <div style="font-weight: 600; margin-bottom: 4px">
+            {{ $t("workers.adapter") }}
+          </div>
           <div style="font-size: 12px; color: #8c8c8c; margin-bottom: 8px">
-            空閒時掛機監控的後端（可選）
+            {{ $t("workers.adapter") }}
           </div>
           <a-select
             v-model:value="workerForm.mergeMonitor"
             style="width: 100%"
-            placeholder="選擇監控後端（可留空）"
+            :placeholder="$t('workers.adapter')"
             allow-clear
           >
-            <a-select-option value="">無</a-select-option>
+            <a-select-option value="">{{ $t("common.no") }}</a-select-option>
             <a-select-option
               v-for="type in workerForm.mergeTypes"
               :key="type"
@@ -784,24 +838,28 @@ const handleRemoveWorker = (index) => {
     <!-- 批量代理設定模態框 -->
     <a-modal
       v-model:open="batchProxyVisible"
-      title="批量設定代理"
-      okText="確定"
-      cancelText="取消"
+      :title="$t('browser.proxy')"
+      :okText="$t('common.ok')"
+      :cancelText="$t('common.cancel')"
       @ok="handleBatchProxySave"
     >
       <div style="font-size: 12px; color: #8c8c8c; margin-bottom: 16px">
-        將對選中的 {{ selectedRowKeys.length }} 個實例統一設定代理
+        {{ $t("browser.proxy") }}: {{ selectedRowKeys.length }}
       </div>
       <div style="margin-bottom: 16px">
         <a-switch v-model:checked="batchProxyForm.proxy" />
         <span style="margin-left: 8px">
-          {{ batchProxyForm.proxy ? "啟用代理" : "停用代理" }}
+          {{
+            batchProxyForm.proxy ? $t("common.enable") : $t("common.disable")
+          }}
         </span>
       </div>
 
       <template v-if="batchProxyForm.proxy">
         <div style="margin-bottom: 16px">
-          <div style="font-weight: 600; margin-bottom: 8px">代理類型</div>
+          <div style="font-weight: 600; margin-bottom: 8px">
+            {{ $t("browser.proxyType") }}
+          </div>
           <a-segmented
             v-model:value="batchProxyForm.proxyType"
             block
@@ -814,45 +872,55 @@ const handleRemoveWorker = (index) => {
         </div>
 
         <div style="margin-bottom: 16px">
-          <div style="font-weight: 600; margin-bottom: 8px">伺服器地址</div>
+          <div style="font-weight: 600; margin-bottom: 8px">
+            {{ $t("browser.proxyHost") }}
+          </div>
           <a-input
             v-model:value="batchProxyForm.proxyHost"
-            placeholder="例如: 127.0.0.1"
+            :placeholder="$t('browser.proxyHost')"
           />
         </div>
 
         <div style="margin-bottom: 16px">
-          <div style="font-weight: 600; margin-bottom: 8px">埠號</div>
+          <div style="font-weight: 600; margin-bottom: 8px">
+            {{ $t("browser.proxyPort") }}
+          </div>
           <a-input-number
             v-model:value="batchProxyForm.proxyPort"
             :min="1"
             :max="65535"
             style="width: 100%"
-            placeholder="例如: 1080"
+            :placeholder="$t('browser.proxyPort')"
           />
         </div>
 
         <div style="margin-bottom: 16px">
-          <div style="font-weight: 600; margin-bottom: 8px">身份驗證</div>
+          <div style="font-weight: 600; margin-bottom: 8px">
+            {{ $t("browser.proxyAuth") }}
+          </div>
           <a-switch v-model:checked="batchProxyForm.proxyAuth" />
           <span style="margin-left: 8px">
-            {{ batchProxyForm.proxyAuth ? "需要驗證" : "無需驗證" }}
+            {{ batchProxyForm.proxyAuth ? $t("common.yes") : $t("common.no") }}
           </span>
         </div>
 
         <div style="margin-bottom: 16px" v-if="batchProxyForm.proxyAuth">
-          <div style="font-weight: 600; margin-bottom: 8px">用戶名</div>
+          <div style="font-weight: 600; margin-bottom: 8px">
+            {{ $t("browser.proxyUser") }}
+          </div>
           <a-input
             v-model:value="batchProxyForm.proxyUsername"
-            placeholder="請輸入用戶名"
+            :placeholder="$t('browser.proxyUser')"
           />
         </div>
 
         <div style="margin-bottom: 16px" v-if="batchProxyForm.proxyAuth">
-          <div style="font-weight: 600; margin-bottom: 8px">密碼</div>
+          <div style="font-weight: 600; margin-bottom: 8px">
+            {{ $t("browser.proxyPass") }}
+          </div>
           <a-input-password
             v-model:value="batchProxyForm.proxyPassword"
-            placeholder="請輸入密碼"
+            :placeholder="$t('browser.proxyPass')"
           />
         </div>
       </template>

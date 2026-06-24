@@ -1,8 +1,11 @@
 <script setup>
 import { ref } from "vue";
 import { useSettingsStore } from "@/stores/settings";
+import { useI18n } from "vue-i18n";
 import { message } from "ant-design-vue";
 import { LockOutlined } from "@ant-design/icons-vue";
+
+const { t } = useI18n();
 
 const props = defineProps({
   visible: {
@@ -19,7 +22,7 @@ const loading = ref(false);
 
 const handleLogin = async () => {
   if (!token.value) {
-    message.warning("請輸入 Token");
+    message.warning(t("login.inputTokenCN"));
     return;
   }
 
@@ -30,15 +33,15 @@ const handleLogin = async () => {
 
     const success = await settingsStore.checkAuth();
     if (success) {
-      message.success("驗證成功");
+      message.success(t("login.authSuccessCN"));
       emit("success");
       emit("update:visible", false);
     } else {
-      message.error("Token 驗證失敗，請檢查是否正確");
+      message.error(t("login.authFailedCN"));
       settingsStore.setToken(originalToken);
     }
   } catch (e) {
-    message.error("驗證過程發生錯誤");
+    message.error(t("login.authErrorCN"));
   } finally {
     loading.value = false;
   }
@@ -48,7 +51,7 @@ const handleLogin = async () => {
 <template>
   <a-modal
     :open="visible"
-    title="需要身分驗證"
+    :title="$t('login.titleCN')"
     :closable="false"
     :maskClosable="false"
     :footer="null"
@@ -63,18 +66,18 @@ const handleLogin = async () => {
           </template>
         </a-avatar>
         <div style="margin-top: 16px; font-size: 16px; font-weight: 500">
-          WebAI2API 管理面板
+          {{ $t("login.panelTitleCN") }}
         </div>
         <div style="color: #8c8c8c; margin-top: 8px">
-          請輸入存取 API Token 以繼續
+          {{ $t("login.subtitleCN") }}
         </div>
       </div>
 
       <a-form layout="vertical">
-        <a-form-item label="API Token">
+        <a-form-item :label="$t('login.tokenLabel')">
           <a-input-password
             v-model:value="token"
-            placeholder="請輸入 API Token"
+            :placeholder="$t('login.tokenPlaceholderCN')"
             size="large"
             @pressEnter="handleLogin"
           >
@@ -91,7 +94,7 @@ const handleLogin = async () => {
           :loading="loading"
           @click="handleLogin"
         >
-          驗證並登入
+          {{ $t("login.loginBtnCN") }}
         </a-button>
       </a-form>
     </div>

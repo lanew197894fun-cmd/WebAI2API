@@ -1,5 +1,6 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from "vue";
+import { useI18n } from "vue-i18n";
 import { useSettingsStore } from "@/stores/settings";
 import {
   DesktopOutlined,
@@ -9,23 +10,20 @@ import {
   ReloadOutlined,
 } from "@ant-design/icons-vue";
 
+const { t } = useI18n();
 const settingsStore = useSettingsStore();
 
-// 狀態
 const loading = ref(true);
 const vncStatus = ref(null);
-const connectionState = ref("disconnected"); // disconnected, connecting, connected, error
+const connectionState = ref("disconnected");
 const errorMessage = ref("");
 const isFullscreen = ref(false);
 
-// DOM 引用
 const vncContainer = ref(null);
 
-// noVNC 實例
 let rfb = null;
 let RFB = null;
 
-// 取得 VNC 狀態
 async function fetchVncStatus() {
   try {
     const res = await fetch("/admin/vnc/status", {
@@ -41,7 +39,6 @@ async function fetchVncStatus() {
   }
 }
 
-// 連接 VNC
 async function connectVnc() {
   if (!vncStatus.value?.enabled) return;
 
@@ -49,27 +46,22 @@ async function connectVnc() {
   errorMessage.value = "";
 
   try {
-    // 動態匯入 noVNC
     if (!RFB) {
       const module = await import("@novnc/novnc/core/rfb.js");
       RFB = module.default;
     }
 
-    // 構建 WebSocket URL
     const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
     const wsUrl = `${protocol}//${window.location.host}/admin/vnc?token=${settingsStore.token}`;
 
-    // 建立 RFB 實例
     rfb = new RFB(vncContainer.value, wsUrl, {
       wsProtocols: ["binary"],
     });
 
-    // 配置
-    rfb.scaleViewport = true; // 縮放遠端畫面以適應容器
-    rfb.clipViewport = false; // 不裁剪視口
-    rfb.resizeSession = false; // 允許調整遠端解析度
+    rfb.scaleViewport = true;
+    rfb.clipViewport = false;
+    rfb.resizeSession = false;
 
-    // 事件監聽
     rfb.addEventListener("connect", () => {
       connectionState.value = "connected";
     });
@@ -77,7 +69,7 @@ async function connectVnc() {
     rfb.addEventListener("disconnect", (e) => {
       connectionState.value = "disconnected";
       if (e.detail.clean === false) {
-        errorMessage.value = "連線意外中斷";
+        errorMessage.value = t("display.disconnected");
       }
       rfb = null;
     });
@@ -87,11 +79,10 @@ async function connectVnc() {
     });
   } catch (e) {
     connectionState.value = "error";
-    errorMessage.value = e.message || "連線失敗";
+    errorMessage.value = e.message || t("display.disconnected");
   }
 }
 
-// 斷開連線
 function disconnectVnc() {
   if (rfb) {
     rfb.disconnect();
@@ -100,7 +91,6 @@ function disconnectVnc() {
   connectionState.value = "disconnected";
 }
 
-// 切換全螢幕
 function toggleFullscreen() {
   if (!vncContainer.value) return;
 
@@ -113,7 +103,6 @@ function toggleFullscreen() {
   }
 }
 
-// 監聽全螢幕變化
 function handleFullscreenChange() {
   isFullscreen.value = !!document.fullscreenElement;
 }
@@ -131,45 +120,41 @@ onUnmounted(() => {
 
 <template>
   <a-layout style="background: transparent">
-    <a-card title="虛擬顯示器" :bordered="false" style="height: 100%">
-      <!-- 載入中 -->
+    <a-card :title="$t('display.title')" :bordered="false" style="height: 100%">
       <div v-if="loading" style="text-align: center; padding: 48px">
         <a-spin size="large" />
-        <div style="margin-top: 16px; color: #8c8c8c">正在檢查 VNC 狀態...</div>
+        <div style="margin-top: 16px; color: #8c8c8c">
+          {{ $t("common.loading") }}
+        </div>
       </div>
 
-      <!-- 非 xvfbMode -->
       <div
         v-else-if="!vncStatus?.xvfbMode"
         style="text-align: center; padding: 48px"
       >
         <DisconnectOutlined style="font-size: 64px; color: #bfbfbf" />
         <div style="margin-top: 16px; font-size: 16px; color: #595959">
-          程式未使用虛擬顯示器執行
+          {{ $t("display.vncUnavailable") }}
         </div>
         <div style="margin-top: 8px; color: #8c8c8c">
-          VNC 遠端顯示功能僅在 Linux 環境下使用
-          <code>-xvfb -vnc</code> 參數啟動時可用
+          VNC {{ $t("display.disconnected") }}
         </div>
       </div>
 
-      <!-- xvfbMode 但 VNC 未啟用 -->
       <div
         v-else-if="!vncStatus?.enabled"
         style="text-align: center; padding: 48px"
       >
         <DesktopOutlined style="font-size: 64px; color: #bfbfbf" />
         <div style="margin-top: 16px; font-size: 16px; color: #595959">
-          VNC 服務未啟動
+          {{ $t("display.vncUnavailable") }}
         </div>
         <div style="margin-top: 8px; color: #8c8c8c">
-          請確保啟動時包含 <code>-vnc</code> 參數，並已安裝 x11vnc
+          <code>-vnc</code> x11vnc
         </div>
       </div>
 
-      <!-- VNC 可用 -->
       <div v-else>
-        <!-- 控制列 -->
         <div
           style="
             margin-bottom: 16px;
@@ -179,18 +164,20 @@ onUnmounted(() => {
           "
         >
           <div>
-            <a-tag v-if="connectionState === 'connected'" color="success"
-              >已連線</a-tag
-            >
+            <a-tag v-if="connectionState === 'connected'" color="success">{{
+              $t("display.connected")
+            }}</a-tag>
             <a-tag
               v-else-if="connectionState === 'connecting'"
               color="processing"
-              >連線中...</a-tag
+              >{{ $t("display.connecting") }}</a-tag
             >
-            <a-tag v-else-if="connectionState === 'error'" color="error"
-              >連線錯誤</a-tag
-            >
-            <a-tag v-else color="default">未連線</a-tag>
+            <a-tag v-else-if="connectionState === 'error'" color="error">{{
+              $t("display.disconnected")
+            }}</a-tag>
+            <a-tag v-else color="default">{{
+              $t("display.disconnected")
+            }}</a-tag>
             <span
               v-if="errorMessage"
               style="margin-left: 8px; color: #ff4d4f; font-size: 12px"
@@ -208,13 +195,13 @@ onUnmounted(() => {
               <template #icon>
                 <DesktopOutlined />
               </template>
-              連線
+              {{ $t("display.connect") }}
             </a-button>
             <a-button v-else danger @click="disconnectVnc">
               <template #icon>
                 <DisconnectOutlined />
               </template>
-              斷開
+              {{ $t("display.disconnect") }}
             </a-button>
             <a-button
               @click="toggleFullscreen"
@@ -233,7 +220,6 @@ onUnmounted(() => {
           </a-space>
         </div>
 
-        <!-- VNC 顯示區域 -->
         <div
           ref="vncContainer"
           style="
@@ -258,14 +244,13 @@ onUnmounted(() => {
           >
             <div style="text-align: center">
               <DesktopOutlined style="font-size: 48px; color: #434343" />
-              <div style="margin-top: 16px">點擊「連線」按鈕檢視遠端顯示器</div>
+              <div style="margin-top: 16px">{{ $t("display.connect") }}</div>
             </div>
           </div>
         </div>
 
-        <!-- 資訊 -->
         <div style="margin-top: 12px; font-size: 12px; color: #8c8c8c">
-          顯示器: {{ vncStatus.display }} | VNC 埠號: {{ vncStatus.port }}
+          {{ vncStatus.display }} | VNC Port: {{ vncStatus.port }}
         </div>
       </div>
     </a-card>

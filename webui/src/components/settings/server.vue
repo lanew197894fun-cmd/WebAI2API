@@ -1,9 +1,11 @@
 <script setup>
 import { onMounted, reactive } from "vue";
+import { useI18n } from "vue-i18n";
 import { useSettingsStore } from "@/stores/settings";
 import { Modal, message } from "ant-design-vue";
 
 const settingsStore = useSettingsStore();
+const { t } = useI18n();
 
 // 表單資料
 const formData = reactive({
@@ -34,19 +36,18 @@ const handleSave = async () => {
     formData.authToken.length > 0 &&
     formData.authToken.length < 10
   ) {
-    message.error("鑑權 Token 如果設定則必須至少 10 個字元，或留空");
+    message.error(t("server.tokenLengthError"));
     return;
   }
 
   // Token 留空時彈出確認框
   if (!formData.authToken) {
     Modal.confirm({
-      title: "安全警告",
-      content:
-        "您正在將鑑權 Token 留空，這意味著 API 和 WebUI 將無需認證即可訪問。請勿在公開網路環境中使用此配置！確定要繼續嗎？",
-      okText: "確定留空",
+      title: t("server.securityWarn"),
+      content: t("server.securityWarnContent"),
+      okText: t("server.confirmEmpty"),
       okType: "danger",
-      cancelText: "取消",
+      cancelText: t("common.cancel"),
       onOk: doSave,
     });
     return;
@@ -59,21 +60,23 @@ const handleSave = async () => {
 
 <template>
   <a-layout style="background: transparent">
-    <a-card title="伺服器設定" :bordered="false" style="width: 100%">
+    <a-card :title="$t('server.title')" :bordered="false" style="width: 100%">
       <!-- 4宮格表單佈局 -->
       <a-row :gutter="[16, 16]">
         <!-- 監聽埠號 -->
         <a-col :xs="24" :md="12">
           <div style="margin-bottom: 8px">
-            <div style="font-weight: 600; margin-bottom: 4px">監聽埠號</div>
+            <div style="font-weight: 600; margin-bottom: 4px">
+              {{ $t("server.port") }}
+            </div>
             <div style="font-size: 12px; color: #8c8c8c; margin-bottom: 8px">
-              設定伺服器監聽的埠號，預設為 5173
+              {{ $t("server.portDesc") }}
             </div>
             <a-input-number
               v-model:value="formData.port"
               :min="1"
               :max="65535"
-              placeholder="請輸入埠號"
+              :placeholder="$t('server.portPlaceholder')"
               style="width: 100%"
             />
           </div>
@@ -82,13 +85,15 @@ const handleSave = async () => {
         <!-- 鑑權 Token -->
         <a-col :xs="24" :md="12">
           <div style="margin-bottom: 8px">
-            <div style="font-weight: 600; margin-bottom: 4px">鑑權 Token</div>
+            <div style="font-weight: 600; margin-bottom: 4px">
+              {{ $t("server.authToken") }}
+            </div>
             <div style="font-size: 12px; color: #8c8c8c; margin-bottom: 8px">
-              用於 API 請求鑑權的密鑰，留空則不啟用鑑權
+              {{ $t("server.authTokenDesc") }}
             </div>
             <a-input-password
               v-model:value="formData.authToken"
-              placeholder="請輸入 Token"
+              :placeholder="$t('server.authTokenPlaceholder')"
               type="password"
             />
           </div>
@@ -97,21 +102,23 @@ const handleSave = async () => {
         <!-- 心跳包类型 (Keepalive Mode) -->
         <a-col :xs="24" :md="12">
           <div style="margin-bottom: 8px">
-            <div style="font-weight: 600; margin-bottom: 4px">心跳包類型</div>
+            <div style="font-weight: 600; margin-bottom: 4px">
+              {{ $t("server.keepalive") }}
+            </div>
             <div style="font-size: 12px; color: #8c8c8c; margin-bottom: 8px">
-              選擇 SSE 流式回應的心跳包格式
+              {{ $t("server.keepaliveDesc") }}
             </div>
             <a-select
               v-model:value="formData.keepaliveMode"
               style="width: 100%"
-              placeholder="請選擇心跳包類型"
+              :placeholder="$t('server.keepalive')"
             >
-              <a-select-option value="comment"
-                >Comment - 註解格式</a-select-option
-              >
-              <a-select-option value="content"
-                >Content - 內容格式</a-select-option
-              >
+              <a-select-option value="comment">{{
+                $t("server.keepaliveComment")
+              }}</a-select-option>
+              <a-select-option value="content">{{
+                $t("server.keepaliveContent")
+              }}</a-select-option>
             </a-select>
           </div>
         </a-col>
@@ -119,19 +126,29 @@ const handleSave = async () => {
         <!-- 日誌等級 -->
         <a-col :xs="24" :md="12">
           <div style="margin-bottom: 8px">
-            <div style="font-weight: 600; margin-bottom: 4px">日誌等級</div>
+            <div style="font-weight: 600; margin-bottom: 4px">
+              {{ $t("server.logLevel") }}
+            </div>
             <div style="font-size: 12px; color: #8c8c8c; margin-bottom: 8px">
-              設定伺服器日誌輸出的詳細程度
+              {{ $t("server.logLevelDesc") }}
             </div>
             <a-select
               v-model:value="formData.logLevel"
               style="width: 100%"
-              placeholder="請選擇日誌等級"
+              :placeholder="$t('server.logLevel')"
             >
-              <a-select-option value="debug">Debug - 調試日誌</a-select-option>
-              <a-select-option value="info">Info - 普通資訊</a-select-option>
-              <a-select-option value="warn">Warn - 警告資訊</a-select-option>
-              <a-select-option value="error">Error - 僅錯誤</a-select-option>
+              <a-select-option value="debug">{{
+                $t("server.logDebug")
+              }}</a-select-option>
+              <a-select-option value="info">{{
+                $t("server.logInfo")
+              }}</a-select-option>
+              <a-select-option value="warn">{{
+                $t("server.logWarn")
+              }}</a-select-option>
+              <a-select-option value="error">{{
+                $t("server.logError")
+              }}</a-select-option>
             </a-select>
           </div>
         </a-col>
@@ -139,13 +156,15 @@ const handleSave = async () => {
 
       <!-- 儲存按鈕（右下角） -->
       <div style="display: flex; justify-content: flex-end; margin-top: 24px">
-        <a-button type="primary" @click="handleSave"> 儲存設定 </a-button>
+        <a-button type="primary" @click="handleSave">
+          {{ $t("common.saveSettings") }}
+        </a-button>
       </div>
     </a-card>
 
     <!-- 佇列設定 -->
     <a-card
-      title="隊列設定"
+      :title="$t('server.queueTitle')"
       :bordered="false"
       style="width: 100%; margin-top: 10px"
     >
@@ -154,17 +173,16 @@ const handleSave = async () => {
         <a-col :xs="24" :md="12">
           <div style="margin-bottom: 8px">
             <div style="font-weight: 600; margin-bottom: 4px">
-              隊列緩衝區大小
+              {{ $t("server.queueBuffer") }}
             </div>
             <div style="font-size: 12px; color: #8c8c8c; margin-bottom: 8px">
-              非流式請求的額外排隊數（設為 0 則不限制非流式請求數量）<br />
-              實際隊列上限 = Workers數量 + 緩衝區大小
+              {{ $t("server.queueBufferDesc") }}
             </div>
             <a-input-number
               v-model:value="formData.queueBuffer"
               :min="0"
               :max="100"
-              placeholder="預設為 2"
+              :placeholder="$t('server.queueBuffer')"
               style="width: 100%"
             />
           </div>
@@ -173,16 +191,17 @@ const handleSave = async () => {
         <!-- 圖片數量上限 -->
         <a-col :xs="24" :md="12">
           <div style="margin-bottom: 8px">
-            <div style="font-weight: 600; margin-bottom: 4px">圖片數量上限</div>
+            <div style="font-weight: 600; margin-bottom: 4px">
+              {{ $t("server.imageLimit") }}
+            </div>
             <div style="font-size: 12px; color: #8c8c8c; margin-bottom: 8px">
-              單次請求最多支援的圖片附件數量<br />
-              網頁最多支援10個附件，超出會被丟棄
+              {{ $t("server.imageLimitDesc") }}
             </div>
             <a-input-number
               v-model:value="formData.imageLimit"
               :min="1"
               :max="10"
-              placeholder="預設為 5"
+              :placeholder="$t('server.imageLimit')"
               style="width: 100%"
             />
           </div>
@@ -192,11 +211,10 @@ const handleSave = async () => {
         <a-col :xs="24" :md="12">
           <div style="margin-bottom: 8px">
             <div style="font-weight: 600; margin-bottom: 4px">
-              圖片 Markdown 格式
+              {{ $t("server.imageMarkdown") }}
             </div>
             <div style="font-size: 12px; color: #8c8c8c; margin-bottom: 8px">
-              開啟後生圖結果將使用 Markdown 語法返回圖片內容<br />
-              開啟此項需要客戶端支援渲染 Markdown
+              {{ $t("server.imageMarkdownDesc") }}
             </div>
             <a-switch v-model:checked="formData.imageMarkdown" />
           </div>
@@ -205,7 +223,9 @@ const handleSave = async () => {
 
       <!-- 儲存按鈕（右下角） -->
       <div style="display: flex; justify-content: flex-end; margin-top: 24px">
-        <a-button type="primary" @click="handleSave"> 儲存設定 </a-button>
+        <a-button type="primary" @click="handleSave">
+          {{ $t("common.saveSettings") }}
+        </a-button>
       </div>
     </a-card>
   </a-layout>

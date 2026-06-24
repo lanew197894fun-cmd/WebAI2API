@@ -1,7 +1,10 @@
 <script setup>
 import { ref, onMounted, reactive, computed } from "vue";
+import { useI18n } from "vue-i18n";
 import { useSettingsStore } from "@/stores/settings";
 import { message } from "ant-design-vue";
+
+const { t } = useI18n();
 import { SettingOutlined, AppstoreOutlined } from "@ant-design/icons-vue";
 
 const settingsStore = useSettingsStore();
@@ -127,11 +130,11 @@ const handleSave = async () => {
 
 <template>
   <a-layout style="background: transparent">
-    <a-card title="配接器管理" :bordered="false">
+    <a-card :title="$t('adapters.title')" :bordered="false">
       <template #extra>
-        <a-button type="link" @click="settingsStore.fetchAdaptersMeta"
-          >重新整理列表</a-button
-        >
+        <a-button type="link" @click="settingsStore.fetchAdaptersMeta">{{
+          $t("common.refresh")
+        }}</a-button>
       </template>
 
       <a-list
@@ -194,7 +197,7 @@ const handleSave = async () => {
     <a-drawer
       v-if="currentAdapter"
       v-model:open="drawerVisible"
-      :title="`配置配接器 - ${currentAdapter.id}`"
+      :title="$t('adapters.title') + ' - ' + currentAdapter.id"
       width="500"
       placement="right"
     >
@@ -219,23 +222,29 @@ const handleSave = async () => {
         v-if="currentAdapter.models && currentAdapter.models.length > 0"
         style="margin-bottom: 16px"
       >
-        <a-collapse-panel key="models" header="模型管理">
+        <a-collapse-panel key="models" :header="$t('adapters.modelFilter')">
           <!-- 模式选择 -->
           <div style="margin-bottom: 12px">
-            <span style="margin-right: 12px; color: #666">過濾模式:</span>
+            <span style="margin-right: 12px; color: #666"
+              >{{ $t("adapters.modelFilter") }}:</span
+            >
             <a-radio-group
               :value="modelFilter.mode"
               @change="(e) => onModeChange(e.target.value)"
             >
-              <a-radio value="blacklist">黑名單</a-radio>
-              <a-radio value="whitelist">白名單</a-radio>
+              <a-radio value="blacklist">{{
+                $t("adapters.blacklist")
+              }}</a-radio>
+              <a-radio value="whitelist">{{
+                $t("adapters.whitelist")
+              }}</a-radio>
             </a-radio-group>
           </div>
           <div style="font-size: 12px; color: #999; margin-bottom: 12px">
             {{
               modelFilter.mode === "blacklist"
-                ? "關閉的模型將被停用，其他模型可用"
-                : "僅開啟的模型可用，其他模型停用"
+                ? $t("adapters.blacklist")
+                : $t("adapters.whitelist")
             }}
           </div>
 
@@ -272,7 +281,7 @@ const handleSave = async () => {
       >
         <a-empty
           v-if="!currentAdapter.models || currentAdapter.models.length === 0"
-          description="該配接器沒有可配置項"
+          :description="$t('adapters.title')"
         />
       </div>
 
@@ -324,10 +333,12 @@ const handleSave = async () => {
 
       <template #footer>
         <div style="text-align: right">
-          <a-button style="margin-right: 8px" @click="drawerVisible = false"
-            >取消</a-button
-          >
-          <a-button type="primary" @click="handleSave">儲存配置</a-button>
+          <a-button style="margin-right: 8px" @click="drawerVisible = false">{{
+            $t("common.cancel")
+          }}</a-button>
+          <a-button type="primary" @click="handleSave">{{
+            $t("common.save")
+          }}</a-button>
         </div>
       </template>
     </a-drawer>
