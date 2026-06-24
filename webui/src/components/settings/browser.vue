@@ -4,17 +4,17 @@ import { useSettingsStore } from "@/stores/settings";
 
 const settingsStore = useSettingsStore();
 
-// 表单数据
+// 表單資料
 const formData = reactive({
   path: "",
   headless: false,
   fission: true,
   humanizeCursor: false, // false | true | 'camou'
-  // CSS 性能优化
+  // CSS 效能最佳化
   cssAnimation: false,
   cssFilter: false,
   cssFont: false,
-  // 全局代理
+  // 全域代理
   proxyEnable: false,
   proxyType: "http",
   proxyHost: "127.0.0.1",
@@ -29,11 +29,11 @@ onMounted(async () => {
   const cfg = settingsStore.browserConfig || {};
   formData.path = cfg.path || "";
   formData.headless = cfg.headless || false;
-  formData.fission = cfg.fission !== false; // 默认 true
-  // humanizeCursor: false=禁用, true=ghost-cursor, 'camou'=Camoufox内置
+  formData.fission = cfg.fission !== false; // 預設 true
+  // humanizeCursor: false=停用, true=ghost-cursor, 'camou'=Camoufox內置
   formData.humanizeCursor = cfg.humanizeCursor ?? false;
 
-  // CSS 性能优化
+  // CSS 效能最佳化
   if (cfg.cssInject) {
     formData.cssAnimation = cfg.cssInject.animation || false;
     formData.cssFilter = cfg.cssInject.filter || false;
@@ -51,7 +51,7 @@ onMounted(async () => {
   }
 });
 
-// 保存设置
+// 儲存設定
 const handleSave = async () => {
   const config = {
     path: formData.path,
@@ -79,9 +79,9 @@ const handleSave = async () => {
 
 <template>
   <a-layout style="background: transparent">
-    <a-card title="浏览器设置" :bordered="false" style="width: 100%">
+    <a-card title="瀏覽器設定" :bordered="false" style="width: 100%">
       <a-row :gutter="[16, 16]">
-        <!-- 浏览器可执行文件路径 -->
+        <!-- 瀏覽器可執行檔案路徑 -->
         <a-col :xs="24" :md="24">
           <div style="margin-bottom: 8px">
             <div style="font-weight: 600; margin-bottom: 4px">
@@ -148,7 +148,7 @@ const handleSave = async () => {
               v-model:value="formData.humanizeCursor"
               block
               :options="[
-                { label: '禁用 (性能最佳)', value: false },
+                { label: '停用 (效能最佳)', value: false },
                 { label: 'Ghost-Cursor (更擬人)', value: true },
                 { label: 'Camoufox內置 (平衡)', value: 'camou' },
               ]"
@@ -170,25 +170,25 @@ const handleSave = async () => {
         </a-col>
       </a-row>
 
-      <!-- 全局代理设置（折叠面板） -->
+      <!-- 全域代理設定（折疊面板） -->
       <div style="margin-top: 16px">
         <a-collapse>
-          <a-collapse-panel key="proxy" header="全局代理设置">
+          <a-collapse-panel key="proxy" header="全域代理設定">
             <div style="font-size: 12px; color: #8c8c8c; margin-bottom: 16px">
-              如果实例没有独立配置代理，将使用此全局代理配置
+              如果實例沒有獨立配置代理，將使用此全域代理配置
             </div>
 
-            <!-- 是否启用代理 -->
+            <!-- 是否啟用代理 -->
             <div style="margin-bottom: 16px">
               <a-switch v-model:checked="formData.proxyEnable" />
               <span style="margin-left: 8px">
-                {{ formData.proxyEnable ? "已启用全局代理" : "未启用全局代理" }}
+                {{ formData.proxyEnable ? "已啟用全域代理" : "未啟用全域代理" }}
               </span>
             </div>
 
-            <!-- 代理类型 -->
+            <!-- 代理類型 -->
             <div style="margin-bottom: 16px" v-if="formData.proxyEnable">
-              <div style="font-weight: 600; margin-bottom: 8px">代理类型</div>
+              <div style="font-weight: 600; margin-bottom: 8px">代理類型</div>
               <a-segmented
                 v-model:value="formData.proxyType"
                 block
@@ -200,11 +200,11 @@ const handleSave = async () => {
             </div>
 
             <a-row :gutter="16" v-if="formData.proxyEnable">
-              <!-- 代理主机 -->
+              <!-- 代理主機 -->
               <a-col :xs="24" :md="12">
                 <div style="margin-bottom: 16px">
                   <div style="font-weight: 600; margin-bottom: 8px">
-                    代理主机
+                    代理主機
                   </div>
                   <a-input
                     v-model:value="formData.proxyHost"
@@ -213,11 +213,11 @@ const handleSave = async () => {
                 </div>
               </a-col>
 
-              <!-- 代理端口 -->
+              <!-- 代理埠號 -->
               <a-col :xs="24" :md="12">
                 <div style="margin-bottom: 16px">
                   <div style="font-weight: 600; margin-bottom: 8px">
-                    代理端口
+                    代理埠號
                   </div>
                   <a-input-number
                     v-model:value="formData.proxyPort"
@@ -230,12 +230,12 @@ const handleSave = async () => {
               </a-col>
             </a-row>
 
-            <!-- 是否需要验证 -->
+            <!-- 是否需要驗證 -->
             <div style="margin-bottom: 16px" v-if="formData.proxyEnable">
-              <div style="font-weight: 600; margin-bottom: 8px">代理认证</div>
+              <div style="font-weight: 600; margin-bottom: 8px">代理認證</div>
               <a-switch v-model:checked="formData.proxyAuth" />
               <span style="margin-left: 8px">
-                {{ formData.proxyAuth ? "需要认证" : "无需认证" }}
+                {{ formData.proxyAuth ? "需要認證" : "無需認證" }}
               </span>
             </div>
 
@@ -249,7 +249,7 @@ const handleSave = async () => {
                   <div style="font-weight: 600; margin-bottom: 8px">用户名</div>
                   <a-input
                     v-model:value="formData.proxyUser"
-                    placeholder="请输入用户名"
+                    placeholder="請輸入用戶名"
                   />
                 </div>
               </a-col>
@@ -260,7 +260,7 @@ const handleSave = async () => {
                   <div style="font-weight: 600; margin-bottom: 8px">密码</div>
                   <a-input-password
                     v-model:value="formData.proxyPasswd"
-                    placeholder="请输入密码"
+                    placeholder="請輸入密碼"
                   />
                 </div>
               </a-col>
@@ -268,15 +268,15 @@ const handleSave = async () => {
           </a-collapse-panel>
 
           <!-- CSS 性能优化 -->
-          <a-collapse-panel key="cssInject" header="CSS 性能优化注入">
+          <a-collapse-panel key="cssInject" header="CSS 效能最佳化注入">
             <a-alert
-              message="⚡ 适用于无 GPU 的服务器环境，通过禁用网页特效来降低 CPU 压力"
+              message="⚡ 適用於無 GPU 的伺服器環境，透過禁用網頁特效來降低 CPU 壓力"
               type="info"
               show-icon
               style="margin-bottom: 16px"
             />
 
-            <!-- 禁用动画 -->
+            <!-- 禁用動畫 -->
             <div
               style="
                 margin-bottom: 16px;
@@ -294,23 +294,23 @@ const handleSave = async () => {
               >
                 <div>
                   <div style="font-weight: 600; margin-bottom: 4px">
-                    禁用网页动画
+                    禁用網頁動畫
                   </div>
                   <div style="font-size: 12px; color: #8c8c8c">
-                    移除 transition 和 animation，显著降低 CPU 持续占用
+                    移除 transition 和 animation，顯著降低 CPU 持續佔用
                   </div>
-                  <a-tag color="green" style="margin-top: 6px">风险：低</a-tag>
+                  <a-tag color="green" style="margin-top: 6px">風險：低</a-tag>
                   <span
                     style="font-size: 11px; color: #389e0d; margin-left: 8px"
                   >
-                    几乎不影响浏览器指纹，但可能导致部分网页布局异常
+                    幾乎不影響瀏覽器指紋，但可能導致部分網頁佈局異常
                   </span>
                 </div>
                 <a-switch v-model:checked="formData.cssAnimation" />
               </div>
             </div>
 
-            <!-- 禁用滤镜 -->
+            <!-- 禁用濾鏡 -->
             <div
               style="
                 margin-bottom: 16px;
@@ -328,23 +328,23 @@ const handleSave = async () => {
               >
                 <div>
                   <div style="font-weight: 600; margin-bottom: 4px">
-                    禁用滤镜和阴影
+                    禁用濾鏡和陰影
                   </div>
                   <div style="font-size: 12px; color: #8c8c8c">
-                    移除 blur(模糊)、box-shadow(阴影) 等复杂渲染
+                    移除 blur(模糊)、box-shadow(陰影) 等複雜渲染
                   </div>
-                  <a-tag color="orange" style="margin-top: 6px">风险：中</a-tag>
+                  <a-tag color="orange" style="margin-top: 6px">風險：中</a-tag>
                   <span
                     style="font-size: 11px; color: #faad14; margin-left: 8px"
                   >
-                    界面会变丑，少数反爬可能检测样式计算结果
+                    介面會變醜，少數反爬可能偵測樣式計算結果
                   </span>
                 </div>
                 <a-switch v-model:checked="formData.cssFilter" />
               </div>
             </div>
 
-            <!-- 降低字体渲染 -->
+            <!-- 降低字體渲染 -->
             <div
               style="
                 padding: 12px;
@@ -362,14 +362,14 @@ const handleSave = async () => {
               >
                 <div>
                   <div style="font-weight: 600; margin-bottom: 4px">
-                    降低字体渲染质量
+                    降低字體渲染品質
                   </div>
                   <div style="font-size: 12px; color: #8c8c8c">
-                    强制使用极速渲染模式，微量减少 CPU 绘图压力
+                    強制使用極速渲染模式，微量減少 CPU 繪圖壓力
                   </div>
-                  <a-tag color="red" style="margin-top: 6px">⚠️ 风险：高</a-tag>
+                  <a-tag color="red" style="margin-top: 6px">⚠️ 風險：高</a-tag>
                   <div style="font-size: 11px; color: #cf1322; margin-top: 4px">
-                    会导致文字边缘有锯齿，且可能导致字体指纹与标准浏览器不符，易被高级反爬识别
+                    會導致文字邊緣有鋸齒，且可能導致字體指紋與標準瀏覽器不符，易被進階反爬識別
                   </div>
                 </div>
                 <a-switch v-model:checked="formData.cssFont" />
@@ -379,9 +379,9 @@ const handleSave = async () => {
         </a-collapse>
       </div>
 
-      <!-- 保存按钮（右下角） -->
+      <!-- 儲存按鈕（右下角） -->
       <div style="display: flex; justify-content: flex-end; margin-top: 24px">
-        <a-button type="primary" @click="handleSave"> 保存设置 </a-button>
+        <a-button type="primary" @click="handleSave"> 儲存設定 </a-button>
       </div>
     </a-card>
   </a-layout>

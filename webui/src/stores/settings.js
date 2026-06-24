@@ -78,7 +78,7 @@ export const useSettingsStore = defineStore("settings", {
       }
     },
 
-    // --- 服务器配置 ---
+    // --- 伺服器配置 ---
     async fetchServerConfig() {
       try {
         const res = await fetch("/admin/config/server", {
@@ -136,10 +136,10 @@ export const useSettingsStore = defineStore("settings", {
       return false;
     },
 
-    // --- 工作实例配置 ---
+    // --- 工作實例配置 ---
     async fetchWorkerConfig() {
       try {
-        // 端点已更改为 /admin/config/instances
+        // 端點已經更改為 /admin/config/instances
         const res = await fetch("/admin/config/instances", {
           headers: this.getHeaders(),
         });
@@ -150,7 +150,7 @@ export const useSettingsStore = defineStore("settings", {
     },
     async saveWorkerConfig(config) {
       try {
-        // 端點已更改為 /admin/config/instances
+        // 端點已經更改為 /admin/config/instances
         const res = await fetch("/admin/config/instances", {
           method: "POST",
           headers: this.getHeaders(),
@@ -209,7 +209,7 @@ export const useSettingsStore = defineStore("settings", {
       return false;
     },
 
-    // --- 适配器配置与元数据 ---
+    // --- 配接器配置与元数据 ---
     async fetchAdaptersMeta() {
       try {
         const res = await fetch("/admin/adapters", {
@@ -230,26 +230,21 @@ export const useSettingsStore = defineStore("settings", {
         console.error("Fetch adapter config failed", e);
       }
     },
-        async saveAdapterConfig(config) {
-            try {
-                const res = await fetch('/admin/config/adapters', {
-                    method: 'POST',
-                    headers: this.getHeaders(),
-                    body: JSON.stringify(config)
-                });
-                const result = await this.handleResponse(res, '適配器設定保存成功');
-                if (result.success) {
-                    // 通過合併更新本地狀態
-                    this.adapterConfig = { ...this.adapterConfig, ...config };
-                    return true;
-                }
-            } catch (e) {
-                Modal.error({ title: '保存失敗 (網路異常)', content: e.message });
-            }
-            return false;
+    async saveAdapterConfig(config) {
+      try {
+        const res = await fetch("/admin/config/adapters", {
+          method: "POST",
+          headers: this.getHeaders(),
+          body: JSON.stringify(config),
+        });
+        const result = await this.handleResponse(res, "配接器設定保存成功");
+        if (result.success) {
+          // 通過合併更新本地狀態
+          this.adapterConfig = { ...this.adapterConfig, ...config };
+          return true;
         }
       } catch (e) {
-        Modal.error({ title: "保存失败 (网络异常)", content: e.message });
+        Modal.error({ title: "保存失敗 (網路異常)", content: e.message });
       }
       return false;
     },

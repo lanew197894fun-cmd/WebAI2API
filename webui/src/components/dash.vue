@@ -19,9 +19,9 @@ const queueData = ref([]);
 const timer = ref(null);
 const queueStats = ref({ processing: 0, waiting: 0, total: 0 });
 
-// 获取队列数据
+// 取得佇列資料
 const fetchQueue = async () => {
-  const settingsStore = useSettingsStore(); // 获取store
+  const settingsStore = useSettingsStore(); // 取得store
   try {
     const res = await fetch("/admin/queue", {
       headers: settingsStore.getHeaders(),
@@ -29,7 +29,7 @@ const fetchQueue = async () => {
     if (res.ok) {
       const data = await res.json();
 
-      // 更新统计信息
+      // 更新統計資訊
       queueStats.value = {
         processing: data.processing || 0,
         waiting: data.waiting || 0,
@@ -63,8 +63,8 @@ const formatUptime = (seconds) => {
   const d = Math.floor(seconds / (3600 * 24));
   const h = Math.floor((seconds % (3600 * 24)) / 3600);
   const m = Math.floor((seconds % 3600) / 60);
-  if (d > 0) return `${d}天 ${h}小时 ${m}分`;
-  if (h > 0) return `${h}小时 ${m}分`;
+  if (d > 0) return `${d}天 ${h}小時 ${m}分`;
+  if (h > 0) return `${h}小時 ${m}分`;
   return `${m}分`;
 };
 
@@ -77,12 +77,12 @@ const formatMemory = (mb) => {
 };
 
 const getLoadColor = (usage) => {
-  if (usage < 50) return "#52c41a"; // 绿色
+  if (usage < 50) return "#52c41a"; // 綠色
   if (usage < 80) return "#faad14"; // 橙色
-  return "#f5222d"; // 红色
+  return "#f5222d"; // 紅色
 };
 
-// 状态映射
+// 狀態映射
         const getStatusConfig = (status) => {
             const map = {
                 'normal': { color: 'green', text: '正常模式 (Normal)' },
@@ -91,12 +91,10 @@ const getLoadColor = (usage) => {
             };
             return map[status] || { color: 'red', text: '未運行' };
         };
-  return map[status] || { color: "red", text: "未运行" };
-};
 
 onMounted(() => {
   refreshData();
-  timer.value = setInterval(refreshData, 5000); // 每5秒轮询
+  timer.value = setInterval(refreshData, 5000); // 每5秒輪詢
 });
 
 onUnmounted(() => {
@@ -130,22 +128,22 @@ onUnmounted(() => {
       </template>
     </a-alert>
 
-    <!-- 响应式布局：手机竖向，电脑横向 -->
+    <!-- 響應式佈局：手機豎向，電腦橫向 -->
     <a-row :gutter="[16, 16]" style="margin-bottom: 24px">
-      <!-- 系统信息卡片 -->
+      <!-- 系統資訊卡片 -->
       <a-col :xs="24" :md="12">
-        <a-card title="系统状态" :bordered="false" style="height: 100%">
+        <a-card title="系統狀態" :bordered="false" style="height: 100%">
           <a-space direction="vertical" style="width: 100%" size="middle">
             <div style="display: flex; justify-content: space-between">
-              <span> <DesktopOutlined /> 系统版本: </span>
+              <span> <DesktopOutlined /> 系統版本: </span>
               <b>{{ systemStore.systemVersion }}</b>
             </div>
             <div style="display: flex; justify-content: space-between">
-              <span> <FieldTimeOutlined /> 运行时间: </span>
+              <span> <FieldTimeOutlined /> 執行時間: </span>
               <b>{{ formatUptime(systemStore.uptime) }}</b>
             </div>
             <div style="display: flex; justify-content: space-between">
-              <span> <ChromeOutlined /> 状态: </span>
+              <span> <ChromeOutlined /> 狀態: </span>
               <a-tag :color="getStatusConfig(systemStore.status).color">
                 {{ getStatusConfig(systemStore.status).text }}
               </a-tag>
@@ -177,7 +175,7 @@ onUnmounted(() => {
                   margin-bottom: 4px;
                 "
               >
-                <span> <PieChartOutlined /> 内存使用: </span>
+                <span> <PieChartOutlined /> 記憶體使用: </span>
                 <span
                   >{{ formatMemory(systemStore.memoryUsage.used) }} /
                   {{ formatMemory(systemStore.memoryUsage.total) }}</span
@@ -207,32 +205,32 @@ onUnmounted(() => {
 
       <!-- 统计数据卡片 -->
       <a-col :xs="24" :md="12">
-        <a-card title="业务统计" :bordered="false" style="height: 100%">
+        <a-card title="業務統計" :bordered="false" style="height: 100%">
           <a-row :gutter="16" style="margin-bottom: 24px">
             <a-col :span="12">
               <a-statistic
-                title="窗口数量"
+                title="視窗數量"
                 :value="systemStore.stats.workers || 0"
               >
                 <template #suffix>
-                  <span style="font-size: 14px; color: #8c8c8c">个</span>
+                  <span style="font-size: 14px; color: #8c8c8c">個</span>
                 </template>
               </a-statistic>
             </a-col>
             <a-col :span="12">
               <a-statistic
-                title="实例数量"
+                title="實例數量"
                 :value="systemStore.stats.instances || 0"
               >
                 <template #suffix>
-                  <span style="font-size: 14px; color: #8c8c8c">个</span>
+                  <span style="font-size: 14px; color: #8c8c8c">個</span>
                 </template>
               </a-statistic>
             </a-col>
           </a-row>
           <a-row :gutter="16">
             <a-col :span="12">
-              <a-statistic title="正在进行" :value="queueStats.processing">
+              <a-statistic title="正在進行" :value="queueStats.processing">
                 <template #suffix>
                   <span style="font-size: 14px; color: #8c8c8c"
                     >/ {{ queueStats.total }}</span
@@ -241,7 +239,7 @@ onUnmounted(() => {
               </a-statistic>
             </a-col>
             <a-col :span="12">
-              <a-statistic title="等待排队" :value="queueStats.waiting">
+              <a-statistic title="等待排隊" :value="queueStats.waiting">
                 <template #suffix>
                   <span style="font-size: 14px; color: #8c8c8c"
                     >/ {{ queueStats.total }}</span
@@ -276,9 +274,9 @@ onUnmounted(() => {
       </a-col>
     </a-row>
 
-    <!-- 任务队列列表 -->
+    <!-- 任務隊列列表 -->
     <a-card
-      title="任务队列实时监控"
+      title="任務隊列即時監控"
       :bordered="false"
       style="width: 100%"
       :bodyStyle="{ padding: '0 24px' }"

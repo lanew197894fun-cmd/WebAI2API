@@ -48,7 +48,7 @@ const handleLogin = async () => {
 <template>
   <a-modal
     :open="visible"
-    title="需要身份驗證"
+    title="需要身分驗證"
     :closable="false"
     :maskClosable="false"
     :footer="null"
@@ -66,7 +66,7 @@ const handleLogin = async () => {
           WebAI2API 管理面板
         </div>
         <div style="color: #8c8c8c; margin-top: 8px">
-          請輸入訪問 API Token 以繼續
+          請輸入存取 API Token 以繼續
         </div>
       </div>
 

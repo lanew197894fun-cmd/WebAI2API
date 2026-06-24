@@ -14,7 +14,7 @@ const handleSavePool = async () => {
   await settingsStore.savePoolConfig(poolConfig.value);
 };
 
-// 获取初始数据
+// 取得初始資料
 onMounted(async () => {
   await Promise.all([
     settingsStore.fetchWorkerConfig(),
@@ -81,7 +81,7 @@ const columns = [
   },
 ];
 
-// 实例列表数据 (从 Store 获取)
+// 實例列表資料 (從 Store 取得)
 const instanceData = computed({
   get: () => settingsStore.workerConfig,
   set: (val) => {
@@ -89,10 +89,10 @@ const instanceData = computed({
   },
 });
 
-// 获取实例唯一标识（优先 id，没有则用 name）
+// 取得實例唯一識別（優先 id，沒有則用 name）
 const getInstanceKey = (inst) => inst.id || inst.name;
 
-// 批量选择
+// 批量選擇
 const selectedRowKeys = ref([]);
 const rowSelection = computed(() => ({
   selectedRowKeys: selectedRowKeys.value,
@@ -101,7 +101,7 @@ const rowSelection = computed(() => ({
   },
 }));
 
-// 批量代理设置
+// 批量代理設定
 const batchProxyVisible = ref(false);
 const batchProxyForm = ref({
   proxy: true,
@@ -171,11 +171,11 @@ const handleBatchDelete = () => {
   });
 };
 
-// 抽屉状态
+// 抽屜狀態
 const drawerOpen = ref(false);
 const editingInstance = ref(null);
 
-// 编辑表单数据
+// 編輯表單資料
 const editForm = ref({
   name: "",
   userDataMark: "",
@@ -189,11 +189,11 @@ const editForm = ref({
   workers: [],
 });
 
-// 创建实例
+// 創建實例
 const handleCreateInstance = () => {
-  editingInstance.value = null; // null表示创建新实例
+  editingInstance.value = null; // null表示創建新實例
   const randomSuffix = Math.random().toString(36).substring(2, 7);
-  // 重置表单为默认值
+  // 重設表單為預設值
   editForm.value = {
     name: `instance-${(instanceData.value || []).length + 1}-${randomSuffix}`,
     userDataMark: "",
@@ -209,10 +209,10 @@ const handleCreateInstance = () => {
   drawerOpen.value = true;
 };
 
-// 编辑实例
+// 編輯實例
 const handleEdit = (record) => {
   editingInstance.value = record;
-  // 填充表单数据
+  // 填充表單資料
   editForm.value = {
     name: record.name,
     userDataMark: record.userDataMark || "",
@@ -225,14 +225,14 @@ const handleEdit = (record) => {
     proxyPassword: record.proxy?.password || "",
     workers: record.workers ? [...record.workers] : [],
   };
-  // 兼容前端展示用的 proxy 布尔值
+  // 相容前端展示用的 proxy 布林值
   if (record.proxy === null || record.proxy === undefined) {
     editForm.value.proxy = false;
   }
   drawerOpen.value = true;
 };
 
-// 删除实例
+// 刪除實例
 const handleDelete = async (record) => {
   const key = getInstanceKey(record);
   const newList = instanceData.value.filter(
@@ -241,14 +241,14 @@ const handleDelete = async (record) => {
   await settingsStore.saveWorkerConfig(newList);
 };
 
-// 保存编辑
+// 儲存編輯
 const handleSaveEdit = async () => {
-  // 构建要保存的对象结构
+  // 構建要儲存的物件結構
   const instanceToSave = {
     name: editForm.value.name,
     userDataMark: editForm.value.userDataMark,
     workers: editForm.value.workers,
-    // 如果启用了代理，则构建代理对象，否则为 null
+    // 如果啟用了代理，則構建代理物件，否則為 null
     proxy: editForm.value.proxy
       ? {
           enable: true,
@@ -264,7 +264,7 @@ const handleSaveEdit = async () => {
 
   let newList = [...(instanceData.value || [])];
   if (editingInstance.value === null) {
-    // 创建
+    // 創建
     newList.push(instanceToSave);
   } else {
     // 更新 - 用唯一标识查找
@@ -283,7 +283,7 @@ const handleSaveEdit = async () => {
   }
 };
 
-// 编辑中的Worker索引
+// 編輯中的Worker索引
 const editingWorkerIndex = ref(-1);
 const workerFormVisible = ref(false);
 const workerForm = ref({
@@ -306,7 +306,7 @@ const handleAddWorker = () => {
   workerFormVisible.value = true;
 };
 
-// 编辑Worker
+// 編輯Worker
 const handleEditWorker = (index) => {
   editingWorkerIndex.value = index;
   const worker = editForm.value.workers[index];
@@ -319,19 +319,19 @@ const handleEditWorker = (index) => {
   workerFormVisible.value = true;
 };
 
-// 保存Worker配置
+// 儲存Worker配置
 const handleSaveWorker = () => {
   if (editingWorkerIndex.value === -1) {
     // 新增
     editForm.value.workers.push({ ...workerForm.value });
   } else {
-    // 编辑
+    // 編輯
     editForm.value.workers[editingWorkerIndex.value] = { ...workerForm.value };
   }
   workerFormVisible.value = false;
 };
 
-// 删除Worker
+// 刪除Worker
 const handleRemoveWorker = (index) => {
   editForm.value.workers.splice(index, 1);
 };
@@ -340,15 +340,15 @@ const handleRemoveWorker = (index) => {
 <template>
   <a-layout style="background: transparent">
     <a-card
-      title="负载均衡"
+      title="負載均衡"
       :bordered="false"
       style="width: 100%; margin-bottom: 10px"
     >
-      <!-- 调度策略 -->
+      <!-- 調度策略 -->
       <div style="margin-bottom: 24px">
-        <div style="font-weight: 600; margin-bottom: 8px">调度策略</div>
+        <div style="font-weight: 600; margin-bottom: 8px">調度策略</div>
         <div style="font-size: 12px; color: #8c8c8c; margin-bottom: 12px">
-          选择任务分配到工作实例的调度算法
+          選擇任務分配到工作實例的調度演算法
         </div>
         <a-segmented
           v-model:value="poolConfig.strategy"
@@ -462,14 +462,14 @@ const handleRemoveWorker = (index) => {
         </a-collapse>
       </div>
 
-      <!-- 保存按鈕 -->
+      <!-- 儲存按鈕 -->
       <div style="display: flex; justify-content: flex-end; margin-top: 24px">
-        <a-button type="primary" @click="handleSavePool"> 保存設定 </a-button>
+        <a-button type="primary" @click="handleSavePool"> 儲存設定 </a-button>
       </div>
     </a-card>
 
     <a-card :bordered="false" style="width: 100%">
-      <!-- 卡片标题和创建按钮 -->
+      <!-- 卡片標題和創建按鈕 -->
       <template #title>
         <div
           style="
@@ -497,7 +497,7 @@ const handleRemoveWorker = (index) => {
         </div>
       </template>
 
-      <!-- 实例表格 -->
+      <!-- 實例表格 -->
       <a-table
         :columns="columns"
         :data-source="instanceData"
@@ -506,7 +506,7 @@ const handleRemoveWorker = (index) => {
         :row-key="(record) => record.id || record.name"
       >
         <template #bodyCell="{ column, record }">
-          <!-- 实例名称 -->
+          <!-- 實例名稱 -->
           <template v-if="column.key === 'name'">
             <a>{{ record.name }}</a>
           </template>
@@ -704,13 +704,13 @@ const handleRemoveWorker = (index) => {
         </div>
       </div>
 
-      <!-- 抽屜底部保存按鈕 -->
+      <!-- 抽屜底部儲存按鈕 -->
       <template #footer>
         <div style="text-align: right">
           <a-button style="margin-right: 8px" @click="drawerOpen = false"
             >取消</a-button
           >
-          <a-button type="primary" @click="handleSaveEdit">保存</a-button>
+          <a-button type="primary" @click="handleSaveEdit">儲存</a-button>
         </div>
       </template>
     </a-drawer>
@@ -795,7 +795,7 @@ const handleRemoveWorker = (index) => {
       <div style="margin-bottom: 16px">
         <a-switch v-model:checked="batchProxyForm.proxy" />
         <span style="margin-left: 8px">
-          {{ batchProxyForm.proxy ? "啟用代理" : "禁用代理" }}
+          {{ batchProxyForm.proxy ? "啟用代理" : "停用代理" }}
         </span>
       </div>
 

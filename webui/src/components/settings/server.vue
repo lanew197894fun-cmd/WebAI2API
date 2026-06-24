@@ -5,7 +5,7 @@ import { Modal, message } from "ant-design-vue";
 
 const settingsStore = useSettingsStore();
 
-// 表单数据
+// 表單資料
 const formData = reactive({
   port: 5173,
   authToken: "",
@@ -21,30 +21,30 @@ onMounted(async () => {
   Object.assign(formData, settingsStore.serverConfig);
 });
 
-// 实际保存逻辑
+// 實際儲存邏輯
 const doSave = async () => {
   await settingsStore.saveServerConfig(formData);
 };
 
-// 保存设置 (带校验和确认弹窗)
+// 儲存設定 (帶校驗和確認彈窗)
 const handleSave = async () => {
-  // 前端校验：Token 长度在 1-9 之间时提示
+  // 前端校驗：Token 長度在 1-9 之間時提示
   if (
     formData.authToken &&
     formData.authToken.length > 0 &&
     formData.authToken.length < 10
   ) {
-    message.error("鉴权 Token 如果设置则必须至少 10 个字符，或留空");
+    message.error("鑑權 Token 如果設定則必須至少 10 個字元，或留空");
     return;
   }
 
-  // Token 留空时弹出确认框
+  // Token 留空時彈出確認框
   if (!formData.authToken) {
     Modal.confirm({
       title: "安全警告",
       content:
-        "您正在将鉴权 Token 留空，这意味着 API 和 WebUI 将无需认证即可访问。请勿在公网环境中使用此配置！确定要继续吗？",
-      okText: "确定留空",
+        "您正在將鑑權 Token 留空，這意味著 API 和 WebUI 將無需認證即可訪問。請勿在公開網路環境中使用此配置！確定要繼續嗎？",
+      okText: "確定留空",
       okType: "danger",
       cancelText: "取消",
       onOk: doSave,
@@ -52,20 +52,20 @@ const handleSave = async () => {
     return;
   }
 
-  // 正常保存
+  // 正常儲存
   await doSave();
 };
 </script>
 
 <template>
   <a-layout style="background: transparent">
-    <a-card title="服务器设置" :bordered="false" style="width: 100%">
-      <!-- 4宫格表单布局 -->
+    <a-card title="伺服器設定" :bordered="false" style="width: 100%">
+      <!-- 4宮格表單佈局 -->
       <a-row :gutter="[16, 16]">
-        <!-- 监听端口 -->
+        <!-- 監聽埠號 -->
         <a-col :xs="24" :md="12">
           <div style="margin-bottom: 8px">
-            <div style="font-weight: 600; margin-bottom: 4px">监听端口</div>
+            <div style="font-weight: 600; margin-bottom: 4px">監聽埠號</div>
             <div style="font-size: 12px; color: #8c8c8c; margin-bottom: 8px">
               設定伺服器監聽的埠號，預設為 5173
             </div>
@@ -73,16 +73,16 @@ const handleSave = async () => {
               v-model:value="formData.port"
               :min="1"
               :max="65535"
-              placeholder="请输入端口号"
+              placeholder="請輸入埠號"
               style="width: 100%"
             />
           </div>
         </a-col>
 
-        <!-- 鉴权 Token -->
+        <!-- 鑑權 Token -->
         <a-col :xs="24" :md="12">
           <div style="margin-bottom: 8px">
-            <div style="font-weight: 600; margin-bottom: 4px">鉴权 Token</div>
+            <div style="font-weight: 600; margin-bottom: 4px">鑑權 Token</div>
             <div style="font-size: 12px; color: #8c8c8c; margin-bottom: 8px">
               用於 API 請求鑑權的密鑰，留空則不啟用鑑權
             </div>
@@ -137,13 +137,13 @@ const handleSave = async () => {
         </a-col>
       </a-row>
 
-      <!-- 保存按鈕（右下角） -->
+      <!-- 儲存按鈕（右下角） -->
       <div style="display: flex; justify-content: flex-end; margin-top: 24px">
-        <a-button type="primary" @click="handleSave"> 保存設定 </a-button>
+        <a-button type="primary" @click="handleSave"> 儲存設定 </a-button>
       </div>
     </a-card>
 
-    <!-- 隊列設定 -->
+    <!-- 佇列設定 -->
     <a-card
       title="隊列設定"
       :bordered="false"
@@ -203,16 +203,16 @@ const handleSave = async () => {
         </a-col>
       </a-row>
 
-      <!-- 保存按鈕（右下角） -->
+      <!-- 儲存按鈕（右下角） -->
       <div style="display: flex; justify-content: flex-end; margin-top: 24px">
-        <a-button type="primary" @click="handleSave"> 保存設定 </a-button>
+        <a-button type="primary" @click="handleSave"> 儲存設定 </a-button>
       </div>
     </a-card>
   </a-layout>
 </template>
 
 <style scoped>
-/* 确保在手机端也能正常显示 */
+/* 確保在手機端也能正常顯示 */
 .ant-input-number {
   width: 100%;
 }
