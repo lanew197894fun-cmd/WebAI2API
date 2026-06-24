@@ -1,10 +1,10 @@
 /**
- * @fileoverview 控制台日志模塊
+ * @fileoverview 控制台日誌模塊
  * @description 提供帶時間戳/級別/模塊名的彩色日誌輸出，並支援通過環境變數控制日誌級別。
  *
  * - 環境變數：LOG_LEVEL=debug|info|warn|error
  * - 輸出格式：YYYY-MM-DD HH:mm:ss.SSS [LEVEL] [模塊] 消息 | k=v ...
- * - 日誌文件：data/logs/system.log（超過 5MB 自動輪轉）
+ * - 日誌檔案：data/logs/system.log（超過 5MB 自動輪轉）
  */
 
 import process from 'process';
@@ -22,7 +22,7 @@ const COLORS = {
     white: '\x1b[37m'
 };
 
-// 日誌文件配置
+// 日誌檔案配置
 const LOG_DIR = path.join(process.cwd(), 'data', 'logs');
 const LOG_FILE = path.join(LOG_DIR, 'system.log');
 const LOG_FILE_OLD = path.join(LOG_DIR, 'system.log.old');
@@ -41,7 +41,7 @@ function rotateLogIfNeeded() {
         if (fs.existsSync(LOG_FILE)) {
             const stats = fs.statSync(LOG_FILE);
             if (stats.size >= MAX_LOG_SIZE) {
-                // 删除舊的 .old 文件
+                // 刪除舊的 .old 檔案
                 if (fs.existsSync(LOG_FILE_OLD)) {
                     fs.unlinkSync(LOG_FILE_OLD);
                 }
@@ -54,7 +54,7 @@ function rotateLogIfNeeded() {
     }
 }
 
-// 寫入日誌文件
+// 寫入日誌檔案
 function writeToFile(line) {
     try {
         ensureLogDir();
@@ -168,26 +168,26 @@ export function log(level, mod, msg, meta = {}) {
         console.log(coloredLine);
     }
 
-    // 寫入日誌文件（不帶顏色）
+    // 寫入日誌檔案（不帶顏色）
     writeToFile(line);
 }
 
 /**
- * 获取日志文件路径
+ * 取得日誌檔案路徑
  */
 export function getLogPath() {
     return LOG_FILE;
 }
 
 /**
- * 获取旧日志文件路径
+ * 取得旧日誌檔案路徑
  */
 export function getOldLogPath() {
     return LOG_FILE_OLD;
 }
 
 /**
- * 清除日志文件
+ * 清除日誌檔案
  */
 export function clearLogs() {
     try {
@@ -204,8 +204,8 @@ export function clearLogs() {
 }
 
 /**
- * 读取日志文件（返回最后 N 行）
- * @param {number} lines - 读取行数
+ * 讀取日誌檔案（回傳最后 N 行）
+ * @param {number} lines - 讀取行数
  * @returns {{logs: string[], total: number, file: string}}
  */
 export function readLogs(lines = 200) {
@@ -220,10 +220,10 @@ export function readLogs(lines = 200) {
         const allLines = content.split('\n').filter(line => line.trim());
         result.total = allLines.length;
 
-        // 返回最后 N 行
+        // 回傳最后 N 行
         result.logs = allLines.slice(-lines);
     } catch (e) {
-        // 忽略读取错误
+        // 忽略讀取錯誤
     }
 
     return result;

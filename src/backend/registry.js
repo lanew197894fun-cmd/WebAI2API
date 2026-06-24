@@ -3,7 +3,7 @@
  * @description 自動掃描 adapter/ 目錄，載入所有適配器的 manifest，提供統一查詢介面。
  *
  * 設計目標：
- * - 新增適配器只需在 adapter/ 目錄添加文件，無需修改框架代碼
+ * - 新增適配器只需在 adapter/ 目錄添加檔案，無需修改框架代碼
  * - 提供模型查詢、策略查詢、導航處理器聚合等統一介面
  */
 
@@ -12,7 +12,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { logger } from '../utils/logger.js';
 
-// 获取当前目录
+// 取得当前目錄
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const ADAPTER_DIR = path.join(__dirname, 'adapter');
@@ -65,7 +65,7 @@ const ADAPTER_DIR = path.join(__dirname, 'adapter');
             // 白名單模式：只有在列表中的才啟用
             return inList;
         } else {
-            // 黑名單模式（預設）：在列表中的被禁用
+            // 黑名單模式（預設）：在列表中的被停用
             return !inList;
         }
     }
@@ -249,7 +249,7 @@ const ADAPTER_DIR = path.join(__dirname, 'adapter');
     supportsModel(adapterId, modelId) {
         const adapter = this.getAdapter(adapterId);
         if (!adapter?.models) return false;
-        // 檢查模型是否存在且未被禁用
+        // 檢查模型是否存在且未被停用
         const modelExists = adapter.models.some(m => m.id === modelId);
         return modelExists && this.isModelEnabled(adapterId, modelId);
     }
@@ -270,7 +270,7 @@ const ADAPTER_DIR = path.join(__dirname, 'adapter');
             return adapter.resolveModelId(modelKey);
         }
 
-        // 預設行為：查找模型並返回 codeName
+        // 預設行為：查找模型並回傳 codeName
         const model = adapter.models.find(m => m.id === modelKey);
         if (model) {
             return model.codeName || model.id;

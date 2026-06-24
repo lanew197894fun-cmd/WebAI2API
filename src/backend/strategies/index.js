@@ -1,8 +1,8 @@
 /**
- * @fileoverview 负载均衡策略模块
+ * @fileoverview 負載均衡策略模組
  * @description Worker 选择策略，用于任务分发时智能选择 Worker。
  *
- * 策略类型：
+ * 策略類型：
  * - least_busy: 优先选择当前任务最少的 Worker
  * - round_robin: 轮询分配
  * - random: 随机分配
@@ -27,7 +27,7 @@ export const STRATEGIES = {
 // ==========================================
 
 /**
- * 创建策略选择器
+ * 建立策略选择器
  * @param {string} strategy - 策略名称
  * @returns {object} 策略选择器实例
  */

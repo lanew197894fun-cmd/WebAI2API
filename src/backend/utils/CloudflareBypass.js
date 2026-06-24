@@ -1,6 +1,6 @@
 /**
  * @fileoverview Cloudflare 验证绕过工具
- * 提供通用的 Cloudflare Turnstile 验证码点击功能
+ * 提供通用的 Cloudflare Turnstile 验证码點擊功能
  */
 
 import { sleep, safeClick } from '../engine/utils.js';
@@ -23,16 +23,16 @@ async function findElementWithShadowRoot(hostHandle) {
 }
 
 /**
- * 通用 Cloudflare Turnstile 验证码点击器
+ * 通用 Cloudflare Turnstile 验证码點擊器
  * 
- * 支持穿透多层 closed shadow-root 和 iframe 找到并点击 checkbox
+ * 支援穿透多层 closed shadow-root 和 iframe 找到并點擊 checkbox
  * 
- * @param {Page} page - Playwright page 对象
+ * @param {Page} page - Playwright page 物件
  * @param {string} hostSelector - 宿主元素选择器，如 '#example-container5' 或 '.cf-turnstile'
  * @param {object} [options={}] - 配置选项
- * @param {number} [options.timeout=10000] - 等待超时时间
- * @param {number} [options.waitAfterClick=5000] - 点击后等待时间
- * @param {object} [options.meta={}] - 日志元数据
+ * @param {number} [options.timeout=10000] - 等待逾時时间
+ * @param {number} [options.waitAfterClick=5000] - 點擊后等待时间
+ * @param {object} [options.meta={}] - 日誌元数据
  * @returns {Promise<{success: boolean, error?: string}>}
  */
 export async function clickTurnstile(page, hostSelector, options = {}) {
@@ -43,7 +43,7 @@ export async function clickTurnstile(page, hostSelector, options = {}) {
     } = options;
 
     try {
-        // 1. 获取宿主元素
+        // 1. 取得宿主元素
         logger.info('人机盾', '正在查找宿主元素...', meta);
         const hostLocator = page.locator(hostSelector).first();
 
@@ -51,7 +51,7 @@ export async function clickTurnstile(page, hostSelector, options = {}) {
         const hostHandle = await hostLocator.elementHandle();
 
         if (!hostHandle) {
-            return { success: false, error: '无法获取宿主元素句柄' };
+            return { success: false, error: '无法取得宿主元素句柄' };
         }
 
         // 2. 查找有 shadowRootUnl 的子元素
@@ -65,7 +65,7 @@ export async function clickTurnstile(page, hostSelector, options = {}) {
 
         logger.debug('人机盾', '找到 shadowRootUnl 子元素', meta);
 
-        // 3. 获取第一层 shadow-root 并找到 iframe
+        // 3. 取得第一层 shadow-root 并找到 iframe
         const shadowRootHandle = await childElement.evaluateHandle(el => el.shadowRootUnl);
         const iframeHandle = await shadowRootHandle.evaluateHandle(root => root?.querySelector('iframe'));
         const iframeElement = iframeHandle.asElement();
@@ -76,10 +76,10 @@ export async function clickTurnstile(page, hostSelector, options = {}) {
 
         logger.debug('人机盾', '找到 iframe，正在进入...', meta);
 
-        // 4. 获取 iframe 的 contentFrame
+        // 4. 取得 iframe 的 contentFrame
         const frame = await iframeElement.contentFrame();
 
-        // 辅助函数：坐标点击
+        // 辅助函式：坐标點擊
         const clickByCoordinates = async () => {
             const box = await iframeElement.boundingBox();
             if (!box) return false;
@@ -94,12 +94,12 @@ export async function clickTurnstile(page, hostSelector, options = {}) {
         };
 
         if (!frame) {
-            logger.warn('人机盾', '无法获取 iframe contentFrame，尝试坐标点击...', meta);
+            logger.warn('人机盾', '无法取得 iframe contentFrame，尝试坐标點擊...', meta);
             if (await clickByCoordinates()) {
                 await sleep(waitAfterClick, waitAfterClick + 3000);
                 return { success: true };
             }
-            return { success: false, error: '无法获取 iframe 边界框' };
+            return { success: false, error: '无法取得 iframe 边界框' };
         }
 
         // 5. 在 iframe 内查找有 shadowRootUnl 的元素
@@ -120,7 +120,7 @@ export async function clickTurnstile(page, hostSelector, options = {}) {
 
         const bodyElement = bodyWithShadowHandle.asElement();
         if (!bodyElement) {
-            logger.warn('人机盾', 'iframe 内未找到 shadowRootUnl 元素，尝试坐标点击...', meta);
+            logger.warn('人机盾', 'iframe 内未找到 shadowRootUnl 元素，尝试坐标點擊...', meta);
             if (await clickByCoordinates()) {
                 await sleep(waitAfterClick, waitAfterClick + 3000);
                 return { success: true };
@@ -130,7 +130,7 @@ export async function clickTurnstile(page, hostSelector, options = {}) {
 
         logger.debug('人机盾', '找到 iframe 内的 shadowRootUnl 宿主', meta);
 
-        // 6. 获取 iframe 内部的 shadow-root 并查找 checkbox
+        // 6. 取得 iframe 内部的 shadow-root 并查找 checkbox
         const innerShadowRootHandle = await bodyElement.evaluateHandle(el => el.shadowRootUnl);
         const checkboxHandle = await innerShadowRootHandle.evaluateHandle(root => {
             if (!root) return null;
@@ -141,7 +141,7 @@ export async function clickTurnstile(page, hostSelector, options = {}) {
 
         const checkboxElement = checkboxHandle.asElement();
         if (!checkboxElement) {
-            logger.warn('人机盾', 'shadow-root 内未找到 checkbox，尝试坐标点击...', meta);
+            logger.warn('人机盾', 'shadow-root 内未找到 checkbox，尝试坐标點擊...', meta);
             if (await clickByCoordinates()) {
                 await sleep(waitAfterClick, waitAfterClick + 3000);
                 return { success: true };
@@ -149,8 +149,8 @@ export async function clickTurnstile(page, hostSelector, options = {}) {
             return { success: false, error: 'iframe shadow-root 内未找到 checkbox' };
         }
 
-        // 7. 直接点击 checkbox
-        logger.info('人机盾', '找到 checkbox，正在点击...', meta);
+        // 7. 直接點擊 checkbox
+        logger.info('人机盾', '找到 checkbox，正在點擊...', meta);
         await safeClick(page, checkboxElement, { bias: 'random' });
         logger.info('人机盾', '我是人类！(元素模式)', meta);
 
@@ -158,7 +158,7 @@ export async function clickTurnstile(page, hostSelector, options = {}) {
         return { success: true };
 
     } catch (err) {
-        logger.error('人机盾', `点击失败: ${err.message}`, meta);
+        logger.error('人机盾', `點擊失败: ${err.message}`, meta);
         return { success: false, error: err.message };
     }
 }

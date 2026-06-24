@@ -1,11 +1,11 @@
 /**
- * @fileoverview 浏览器测试适配器
- * 提供多种浏览器测试功能，包括 Cloudflare Turnstile 验证、指纹检测等
+ * @fileoverview 瀏覽器测试配接器
+ * 提供多种瀏覽器测试功能，包括 Cloudflare Turnstile 验证、指纹偵測等
  * 
- * 模型类型:
- * - cloudflare-turnstile: 点击验证后截屏
- * - 其他 image 类型: 加载页面后截屏
- * - text 类型: 返回页面文本内容
+ * 模型類型:
+ * - cloudflare-turnstile: 點擊验证后截屏
+ * - 其他 image 類型: 載入页面后截屏
+ * - text 類型: 回傳页面文本内容
  */
 
 import { sleep } from '../engine/utils.js';
@@ -17,19 +17,19 @@ import { clickTurnstile } from '../utils/CloudflareBypass.js';
 import { logger } from '../../utils/logger.js';
 
 /**
- * 执行 Turnstile 验证并截屏
+ * 執行 Turnstile 验证并截屏
  */
 async function handleTurnstile(page, meta) {
     const TARGET_URL = 'https://nopecha.com/captcha/turnstile';
     const HOST_SELECTOR = '#example-container5';
 
-    logger.info('适配器', '开启 Turnstile 测试...', meta);
+    logger.info('配接器', '开启 Turnstile 测试...', meta);
     await gotoWithCheck(page, TARGET_URL);
 
-    // 等待页面加载
+    // 等待页面載入
     await sleep(3000, 4000);
 
-    // 使用通用 Cloudflare 验证码点击器
+    // 使用通用 Cloudflare 验证码點擊器
     const result = await clickTurnstile(page, HOST_SELECTOR, {
         timeout: 10000,
         waitAfterClick: 3000,
@@ -40,8 +40,8 @@ async function handleTurnstile(page, meta) {
         return { error: result.error };
     }
 
-    // 截屏并返回
-    logger.info('适配器', '正在截屏...', meta);
+    // 截屏并回傳
+    logger.info('配接器', '正在截屏...', meta);
     const screenshot = await page.screenshot({ type: 'png', fullPage: true });
     const base64 = screenshot.toString('base64');
 
@@ -49,17 +49,17 @@ async function handleTurnstile(page, meta) {
 }
 
 /**
- * 处理普通 image 类型：加载页面后截屏
+ * 处理普通 image 類型：載入页面后截屏
  */
 async function handleImagePage(page, url, meta) {
-    logger.info('适配器', `正在加载页面: ${url}`, meta);
+    logger.info('配接器', `正在載入页面: ${url}`, meta);
     await gotoWithCheck(page, url);
 
-    // 等待页面加载完成
+    // 等待页面載入完成
     await sleep(3000, 5000);
 
-    // 截屏并返回
-    logger.info('适配器', '正在截屏...', meta);
+    // 截屏并回傳
+    logger.info('配接器', '正在截屏...', meta);
     const screenshot = await page.screenshot({ type: 'png', fullPage: true });
     const base64 = screenshot.toString('base64');
 
@@ -67,19 +67,19 @@ async function handleImagePage(page, url, meta) {
 }
 
 /**
- * 处理 ping0.cc：检测并处理 Cloudflare 验证后截屏
+ * 处理 ping0.cc：偵測并处理 Cloudflare 验证后截屏
  */
 async function handlePing0(page, url, meta) {
-    logger.info('适配器', `正在加载页面: ${url}`, meta);
+    logger.info('配接器', `正在載入页面: ${url}`, meta);
     await gotoWithCheck(page, url);
 
-    // 等待页面加载
+    // 等待页面載入
     await sleep(2000, 3000);
 
-    // 检测是否有 Cloudflare 验证码
+    // 偵測是否有 Cloudflare 验证码
     const cfElement = await page.$('#captcha-element');
     if (cfElement) {
-        logger.info('适配器', '检测到 Cloudflare 验证码，正在处理...', meta);
+        logger.info('配接器', '偵測到 Cloudflare 验证码，正在处理...', meta);
 
         const result = await clickTurnstile(page, '#captcha-element', {
             timeout: 10000,
@@ -88,7 +88,7 @@ async function handlePing0(page, url, meta) {
         });
 
         if (!result.success) {
-            logger.warn('适配器', `Cloudflare 验证失败: ${result.error}`, meta);
+            logger.warn('配接器', `Cloudflare 验证失败: ${result.error}`, meta);
             // 继续截屏，可能验证页面也有价值
         }
 
@@ -96,8 +96,8 @@ async function handlePing0(page, url, meta) {
         await sleep(3000, 5000);
     }
 
-    // 截屏并返回
-    logger.info('适配器', '正在截屏...', meta);
+    // 截屏并回傳
+    logger.info('配接器', '正在截屏...', meta);
     const screenshot = await page.screenshot({ type: 'png', fullPage: true });
     const base64 = screenshot.toString('base64');
 
@@ -105,24 +105,24 @@ async function handlePing0(page, url, meta) {
 }
 
 /**
- * 处理 text 类型：返回页面文本内容
+ * 处理 text 類型：回傳页面文本内容
  */
 async function handleTextPage(page, url, meta) {
-    logger.info('适配器', `正在加载页面: ${url}`, meta);
+    logger.info('配接器', `正在載入页面: ${url}`, meta);
     await gotoWithCheck(page, url);
 
-    // 等待页面加载完成
+    // 等待页面載入完成
     await sleep(1000, 2000);
 
-    // 获取页面文本内容
+    // 取得页面文本内容
     const textContent = await page.evaluate(() => document.body.innerText);
-    logger.info('适配器', `获取文本内容，长度: ${textContent.length}`, meta);
+    logger.info('配接器', `取得文本内容，长度: ${textContent.length}`, meta);
 
     return { text: textContent.trim() };
 }
 
 /**
- * 主生成函数
+ * 主生成函式
  */
 async function generate(context, prompt, imgPaths, modelId, meta = {}) {
     const { page } = context;
@@ -136,14 +136,14 @@ async function generate(context, prompt, imgPaths, modelId, meta = {}) {
 
         const { url, type } = modelConfig;
 
-        // 根据模型 ID 和类型分发处理
+        // 根据模型 ID 和類型分发处理
         switch (modelId) {
             case 'cloudflare-turnstile':
                 return await handleTurnstile(page, meta);
             case 'ping0':
                 return await handlePing0(page, url, meta);
             default:
-                // 根据类型分发
+                // 根据類型分发
                 return type === 'text'
                     ? await handleTextPage(page, url, meta)
                     : await handleImagePage(page, url, meta);
@@ -153,18 +153,18 @@ async function generate(context, prompt, imgPaths, modelId, meta = {}) {
         const pageError = normalizePageError(err, meta);
         if (pageError) return pageError;
 
-        logger.error('适配器', '任务失败', { ...meta, error: err.message });
+        logger.error('配接器', '任务失败', { ...meta, error: err.message });
         return { error: `任务失败: ${err.message}` };
     } finally { }
 }
 
 /**
- * 适配器 manifest
+ * 配接器 manifest
  */
 export const manifest = {
     id: 'test',
-    displayName: '浏览器检测，仅供调试使用',
-    description: '包含 Cloudflare Turnstile 验证测试、浏览器指纹检测、IP 纯净度查询等功能，仅供调试使用。',
+    displayName: '瀏覽器偵測，仅供调试使用',
+    description: '包含 Cloudflare Turnstile 验证测试、瀏覽器指纹偵測、IP 纯净度查询等功能，仅供调试使用。',
 
     getTargetUrl(config, workerConfig) {
         return 'https://abrahamjuliot.github.io/creepjs/';

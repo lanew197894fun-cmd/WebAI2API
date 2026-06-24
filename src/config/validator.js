@@ -25,7 +25,7 @@ export function validateServerConfig(data) {
     // Auth Token 校驗：允許留空，但非空時必須至少 10 個字元
     if (data.authToken !== undefined) {
         if (typeof data.authToken !== 'string') {
-            errors.push('authToken 必須是字符串');
+            errors.push('authToken 必須是字串');
         } else if (data.authToken.length > 0 && data.authToken.length < 10) {
             errors.push('authToken 如果設置則必須至少 10 個字元，或留空');
         }
@@ -79,9 +79,9 @@ export function validateServerConfig(data) {
 export function validateBrowserConfig(data) {
     const errors = [];
 
-    // Path 校驗（可選，字符串）
+    // Path 校驗（可選，字串）
     if (data.path !== undefined && typeof data.path !== 'string') {
-        errors.push('path 必須是字符串');
+        errors.push('path 必須是字串');
     }
 
     // Headless 校驗
@@ -143,7 +143,7 @@ export function validateInstancesConfig(data) {
 
         // Instance 名稱校驗
         if (!inst.name || typeof inst.name !== 'string') {
-            errors.push(`${prefix}: name 是必填字段且必須是字符串`);
+            errors.push(`${prefix}: name 是必填字段且必須是字串`);
         } else if (inst.name.trim() === '') {
             errors.push(`${prefix}: name 不能為空`);
         } else if (instanceNames.has(inst.name)) {
@@ -155,9 +155,9 @@ export function validateInstancesConfig(data) {
         // userDataMark 校驗（可選，可為空）
         if (inst.userDataMark !== undefined && inst.userDataMark !== null && inst.userDataMark !== '') {
             if (typeof inst.userDataMark !== 'string') {
-                errors.push(`${prefix}: userDataMark 必須是字符串`);
+                errors.push(`${prefix}: userDataMark 必須是字串`);
             } else if (!/^[a-zA-Z0-9_-]+$/.test(inst.userDataMark)) {
-                errors.push(`${prefix}: userDataMark 只能包含字母、數字、下劃線和連字符`);
+                errors.push(`${prefix}: userDataMark 只能包含字母、數字、下劃線和連字元`);
             }
         }
 
@@ -286,7 +286,7 @@ export function validateAdaptersConfig(data) {
     if (data.gemini_biz) {
         if (data.gemini_biz.entryUrl !== undefined) {
             if (typeof data.gemini_biz.entryUrl !== 'string') {
-                errors.push('gemini_biz.entryUrl 必須是字符串');
+                errors.push('gemini_biz.entryUrl 必須是字串');
             } else if (data.gemini_biz.entryUrl && !data.gemini_biz.entryUrl.startsWith('https://')) {
                 errors.push('gemini_biz.entryUrl 必須以 https:// 開頭');
             }

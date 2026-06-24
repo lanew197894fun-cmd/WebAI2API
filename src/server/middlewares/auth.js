@@ -18,9 +18,9 @@ export function checkAuth(req, authToken) {
 }
 
 /**
- * 创建鉴权中间件
+ * 建立鉴权中间件
  * @param {string} authToken - 认证令牌
- * @returns {Function} 中间件函数
+ * @returns {Function} 中间件函式
  */
 export function createAuthMiddleware(authToken) {
     /**
@@ -30,7 +30,7 @@ export function createAuthMiddleware(authToken) {
      * @returns {boolean} 是否通过鉴权
      */
     return function authMiddleware(req, res) {
-        // 如果 authToken 为空，跳过认证（允许所有请求）
+        // 如果 authToken 为空，跳過认证（允许所有请求）
         if (!authToken) {
             return true;
         }

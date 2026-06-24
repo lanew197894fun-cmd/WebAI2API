@@ -1,6 +1,6 @@
 /**
- * @fileoverview VNC WebSocket 代理模块
- * @description 将 VNC TCP 连接转发到 WebSocket
+ * @fileoverview VNC WebSocket 代理模組
+ * @description 将 VNC TCP 連接转发到 WebSocket
  */
 
 import net from 'net';
@@ -24,7 +24,7 @@ export async function handleVncUpgrade(req, socket, head, authToken) {
         return;
     }
 
-    // 获取 VNC 信息
+    // 取得 VNC 資訊
     const vncInfo = await getVncInfo();
     if (!vncInfo || !vncInfo.enabled) {
         socket.write('HTTP/1.1 503 Service Unavailable\r\n\r\n');
@@ -45,7 +45,7 @@ export async function handleVncUpgrade(req, socket, head, authToken) {
         .update(key + '258EAFA5-E914-47DA-95CA-C5AB0DC85B11')
         .digest('base64');
 
-    // 发送 WebSocket 握手响应
+    // 发送 WebSocket 握手回應
     socket.write(
         'HTTP/1.1 101 Switching Protocols\r\n' +
         'Upgrade: websocket\r\n' +
@@ -55,14 +55,14 @@ export async function handleVncUpgrade(req, socket, head, authToken) {
         '\r\n'
     );
 
-    // 连接到 VNC 服务器
+    // 連接到 VNC 服务器
     const vncSocket = net.createConnection({
         host: '127.0.0.1',
         port: vncInfo.port
     });
 
     vncSocket.on('error', (err) => {
-        console.error('[VNC Proxy] VNC 连接错误:', err.message);
+        console.error('[VNC Proxy] VNC 連接錯誤:', err.message);
         socket.destroy();
     });
 
@@ -95,7 +95,7 @@ export async function handleVncUpgrade(req, socket, head, authToken) {
 
             const { data, bytesConsumed, opcode } = result;
 
-            // 关闭帧
+            // 關閉帧
             if (opcode === 0x08) {
                 vncSocket.destroy();
                 socket.destroy();

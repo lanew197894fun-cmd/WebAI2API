@@ -1,6 +1,6 @@
 /**
- * @fileoverview src/server 模块入口
- * @description 导出服务器相关模块
+ * @fileoverview src/server 模組入口
+ * @description 导出服务器相關模組
  */
 
 export { ERROR_CODES, getErrorMessage, getErrorStatus, getErrorDetails } from './errors.js';

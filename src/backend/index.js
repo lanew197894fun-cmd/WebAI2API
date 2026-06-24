@@ -1,12 +1,12 @@
 /**
- * @fileoverview 后端适配器入口
- * @description 基于 Pool 架构统一管理多浏览器实例，提供统一的对外接口。
+ * @fileoverview 后端配接器入口
+ * @description 基於 Pool 架构统一管理多瀏覽器实例，提供统一的对外介面。
  *
  * 对外统一能力：
  * - `initBrowser(cfg)` → 初始化 Pool
  * - `generate(ctx, prompt, imagePaths, modelId, meta)`
  * - `getModels()` / `getImagePolicy(modelKey)` / `getModelType(modelKey)`
- * - `getCookies(workerName, domain)` - 获取指定 Worker 的 Cookies
+ * - `getCookies(workerName, domain)` - 取得指定 Worker 的 Cookies
  */
 
 import fs from 'fs';
@@ -15,10 +15,10 @@ import { loadConfig } from '../config/index.js';
 import { PoolManager } from './pool/index.js';
 import { logger } from '../utils/logger.js';
 
-// --- 集中管理的路径常量 ---
+// --- 集中管理的路徑常量 ---
 const TEMP_DIR = path.join(process.cwd(), 'data', 'temp');
 
-// 确保临时目录存在
+// 确保临时目錄存在
 if (!fs.existsSync(TEMP_DIR)) {
     fs.mkdirSync(TEMP_DIR, { recursive: true });
 }
@@ -27,13 +27,13 @@ if (!fs.existsSync(TEMP_DIR)) {
 let poolManager = null;
 
 /**
- * 获取后端接口
- * @returns {object} 后端统一接口
+ * 取得后端介面
+ * @returns {object} 后端统一介面
  */
 export function getBackend() {
     const config = loadConfig();
 
-    // 将临时目录路径注入 config 对象
+    // 将临时目錄路徑注入 config 物件
     config.paths = {
         tempDir: TEMP_DIR
     };
@@ -45,7 +45,7 @@ export function getBackend() {
 
         /**
          * 初始化 Pool
-         * @param {object} cfg - 配置对象
+         * @param {object} cfg - 配置物件
          * @returns {Promise<{poolManager: PoolManager, config: object}>}
          */
         initBrowser: async (cfg) => {
@@ -60,12 +60,12 @@ export function getBackend() {
         },
 
         /**
-         * 生成图片
-         * @param {object} ctx - 浏览器上下文 (来自 initBrowser 返回)
-         * @param {string} prompt - 提示词
-         * @param {string[]} paths - 图片路径
+         * 生成圖片
+         * @param {object} ctx - 瀏覽器上下文 (来自 initBrowser 回傳)
+         * @param {string} prompt - 提示詞
+         * @param {string[]} paths - 圖片路徑
          * @param {string} modelId - 模型 ID
-         * @param {object} meta - 元信息
+         * @param {object} meta - 元資訊
          */
         generate: async (ctx, prompt, paths, modelId, meta) => {
             if (!poolManager) {
@@ -75,7 +75,7 @@ export function getBackend() {
         },
 
         /**
-         * 获取模型列表
+         * 取得模型列表
          * @returns {object}
          */
         getModels: () => {
@@ -86,7 +86,7 @@ export function getBackend() {
         },
 
         /**
-         * 获取图片策略
+         * 取得圖片策略
          * @param {string} modelKey - 模型 key
          * @returns {string}
          */
@@ -98,7 +98,7 @@ export function getBackend() {
         },
 
         /**
-         * 获取模型类型
+         * 取得模型類型
          * @param {string} modelKey - 模型 key
          * @returns {string} 'text' | 'image'
          */
@@ -110,7 +110,7 @@ export function getBackend() {
         },
 
         /**
-         * 获取 Cookies
+         * 取得 Cookies
          * @param {string} [workerName] - Worker 名称
          * @param {string} [domain] - 域名
          * @returns {Promise<{worker: string, cookies: object[]}>}
@@ -123,7 +123,7 @@ export function getBackend() {
         },
 
         /**
-         * 触发监控导航（空闲时）
+         * 触发監控导航（空闲时）
          */
         navigateToMonitor: async () => {
             if (poolManager) {
@@ -132,7 +132,7 @@ export function getBackend() {
         },
 
         /**
-         * 获取 PoolManager 实例
+         * 取得 PoolManager 实例
          * @returns {PoolManager|null}
          */
         getPoolManager: () => poolManager

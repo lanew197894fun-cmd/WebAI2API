@@ -1,5 +1,5 @@
 /**
- * @fileoverview DeepSeek 文本生成适配器
+ * @fileoverview DeepSeek 文本生成配接器
  */
 
 import {
@@ -20,10 +20,10 @@ const INPUT_SELECTOR = 'textarea';
 
 /**
  * 切换功能按钮状态
- * @param {import('playwright-core').Page} page - 页面对象
+ * @param {import('playwright-core').Page} page - 页面物件
  * @param {string} buttonName - 按钮名称 (DeepThink / Search)
- * @param {boolean} targetState - 目标状态 (true=开启, false=关闭)
- * @param {object} meta - 日志元数据
+ * @param {boolean} targetState - 目标状态 (true=开启, false=關閉)
+ * @param {object} meta - 日誌元数据
  * @returns {Promise<boolean>} 是否成功切换
  */
 async function toggleButton(page, buttonName, targetState, meta = {}) {
@@ -31,33 +31,33 @@ async function toggleButton(page, buttonName, targetState, meta = {}) {
         const btn = page.getByRole('button', { name: buttonName });
         const btnCount = await btn.count();
         if (btnCount === 0) {
-            logger.debug('适配器', `未找到 ${buttonName} 按钮`, meta);
+            logger.debug('配接器', `未找到 ${buttonName} 按钮`, meta);
             return false;
         }
 
-        // 获取当前状态 (检查 class 是否包含 ds-toggle-button--selected)
+        // 取得当前状态 (检查 class 是否包含 ds-toggle-button--selected)
         const isSelected = await btn.evaluate(el => el.classList.contains('ds-toggle-button--selected'));
 
         if (isSelected !== targetState) {
-            logger.info('适配器', `切换 ${buttonName}: ${isSelected} -> ${targetState}`, meta);
+            logger.info('配接器', `切换 ${buttonName}: ${isSelected} -> ${targetState}`, meta);
             await safeClick(page, btn, { bias: 'button' });
             await sleep(300, 500);
             return true;
         } else {
-            logger.debug('适配器', `${buttonName} 已是目标状态: ${targetState}`, meta);
+            logger.debug('配接器', `${buttonName} 已是目标状态: ${targetState}`, meta);
             return true;
         }
     } catch (e) {
-        logger.warn('适配器', `切换 ${buttonName} 失败: ${e.message}`, meta);
+        logger.warn('配接器', `切换 ${buttonName} 失败: ${e.message}`, meta);
         return false;
     }
 }
 
 /**
  * 配置模型功能 (thinking / search)
- * @param {import('playwright-core').Page} page - 页面对象
+ * @param {import('playwright-core').Page} page - 页面物件
  * @param {object} modelConfig - 模型配置
- * @param {object} meta - 日志元数据
+ * @param {object} meta - 日誌元数据
  */
 async function configureModel(page, modelConfig, meta = {}) {
     const thinking = modelConfig?.thinking || false;
@@ -73,12 +73,12 @@ async function configureModel(page, modelConfig, meta = {}) {
 }
 
 /**
- * 执行文本生成任务
- * @param {object} context - 浏览器上下文 { page, config }
- * @param {string} prompt - 提示词
- * @param {string[]} imgPaths - 图片路径数组 (此适配器不支持)
+ * 執行文本生成任务
+ * @param {object} context - 瀏覽器上下文 { page, config }
+ * @param {string} prompt - 提示詞
+ * @param {string[]} imgPaths - 圖片路徑陣列 (此配接器不支援)
  * @param {string} [modelId] - 模型 ID
- * @param {object} [meta={}] - 日志元数据
+ * @param {object} [meta={}] - 日誌元数据
  * @returns {Promise<{text?: string, reasoning?: string, error?: string}>}
  */
 async function generate(context, prompt, imgPaths, modelId, meta = {}) {
@@ -86,10 +86,10 @@ async function generate(context, prompt, imgPaths, modelId, meta = {}) {
     const waitTimeout = config?.backend?.pool?.waitTimeout ?? 120000;
 
     try {
-        logger.info('适配器', '开启新会话...', meta);
+        logger.info('配接器', '开启新会话...', meta);
         await gotoWithCheck(page, TARGET_URL);
 
-        // 1. 等待输入框加载
+        // 1. 等待輸入框載入
         await waitForInput(page, INPUT_SELECTOR, { click: false });
 
         // 1.5 切换基础/专业模式 (Instant / Expert)
@@ -99,12 +99,12 @@ async function generate(context, prompt, imgPaths, modelId, meta = {}) {
             const modeBtn = page.locator(`div[data-model-type="${targetType}"]`).first();
             
             if (await modeBtn.count() > 0) {
-                logger.info('适配器', `切换 ${isExpert ? 'Expert' : 'Instant'} 模式...`, meta);
+                logger.info('配接器', `切换 ${isExpert ? 'Expert' : 'Instant'} 模式...`, meta);
                 await safeClick(page, modeBtn, { bias: 'button' });
                 await sleep(300, 500);
             }
         } catch (e) {
-            logger.debug('适配器', `模式切换异常 (部分账号可能无此入口): ${e.message}`, meta);
+            logger.debug('配接器', `模式切换异常 (部分帳號可能无此入口): ${e.message}`, meta);
         }
 
         // 2. 配置模型功能 (thinking / search)
@@ -113,19 +113,19 @@ async function generate(context, prompt, imgPaths, modelId, meta = {}) {
             await configureModel(page, modelConfig, meta);
         }
 
-        // 3. 输入提示词
-        logger.info('适配器', '输入提示词...', meta);
+        // 3. 輸入提示詞
+        logger.info('配接器', '輸入提示詞...', meta);
         await safeClick(page, INPUT_SELECTOR, { bias: 'input' });
         await humanType(page, INPUT_SELECTOR, prompt);
         await sleep(300, 500);
 
-        // 4. 先启动 API 监听
-        logger.debug('适配器', '启动 API 监听...', meta);
+        // 4. 先啟動 API 监听
+        logger.debug('配接器', '啟動 API 监听...', meta);
 
         let textContent = '';
         let thinkingContent = '';  // thinking 内容
         let isComplete = false;
-        let isCollecting = false;  // 当前最后一个 fragment 是否为 RESPONSE 类型
+        let isCollecting = false;  // 当前最后一个 fragment 是否为 RESPONSE 類型
         let isCollectingThinking = false;  // 是否正在收集 thinking
 
         const responsePromise = page.waitForResponse(async (response) => {
@@ -139,7 +139,7 @@ async function generate(context, prompt, imgPaths, modelId, meta = {}) {
                 const lines = body.split('\n');
 
                 for (const line of lines) {
-                    // 跳过事件行和空行
+                    // 跳過事件行和空行
                     if (line.startsWith('event:') || !line.startsWith('data:')) continue;
 
                     const dataStr = line.slice(5).trim();
@@ -150,7 +150,7 @@ async function generate(context, prompt, imgPaths, modelId, meta = {}) {
 
                         // --- 处理 fragment 列表变更，更新 isCollecting 状态 ---
 
-                        // 初始响应中可能已有 fragments (如 THINK / SEARCH / RESPONSE)
+                        // 初始回應中可能已有 fragments (如 THINK / SEARCH / RESPONSE)
                         if (data.v?.response?.fragments && Array.isArray(data.v.response.fragments)) {
                             for (const fragment of data.v.response.fragments) {
                                 if (fragment.type === 'RESPONSE') {
@@ -215,7 +215,7 @@ async function generate(context, prompt, imgPaths, modelId, meta = {}) {
 
                         // --- 处理文本内容追加 ---
 
-                        // 带路径的 content 操作 (如 response/fragments/-1/content)
+                        // 带路徑的 content 操作 (如 response/fragments/-1/content)
                         if (data.p && typeof data.v === 'string') {
                             const match = data.p.match(/response\/fragments\/(-?\d+)\/content/);
                             if (match) {
@@ -227,7 +227,7 @@ async function generate(context, prompt, imgPaths, modelId, meta = {}) {
                             }
                         }
 
-                        // 纯文本追加 (只有 v 字符串，没有 p 和 o)
+                        // 纯文本追加 (只有 v 字串，没有 p 和 o)
                         if (data.v && typeof data.v === 'string' && !data.p && !data.o) {
                             if (isCollecting) {
                                 textContent += data.v;
@@ -243,7 +243,7 @@ async function generate(context, prompt, imgPaths, modelId, meta = {}) {
                             isComplete = true;
                         }
                     } catch {
-                        // 忽略解析错误
+                        // 忽略解析錯誤
                     }
                 }
 
@@ -253,13 +253,13 @@ async function generate(context, prompt, imgPaths, modelId, meta = {}) {
             }
         }, { timeout: waitTimeout });
 
-        // 5. 发送提示词
-        logger.debug('适配器', '发送提示词...', meta);
+        // 5. 发送提示詞
+        logger.debug('配接器', '发送提示詞...', meta);
         await page.keyboard.press('Enter');
 
-        logger.info('适配器', '等待生成结果...', meta);
+        logger.info('配接器', '等待生成结果...', meta);
 
-        // 6. 等待 API 响应
+        // 6. 等待 API 回應
         try {
             await responsePromise;
         } catch (e) {
@@ -269,39 +269,39 @@ async function generate(context, prompt, imgPaths, modelId, meta = {}) {
         }
 
         if (!textContent || textContent.trim() === '') {
-            logger.warn('适配器', '回复内容为空', meta);
+            logger.warn('配接器', '回复内容为空', meta);
             return { error: '回复内容为空' };
         }
 
-        logger.info('适配器', `已获取文本内容 (${textContent.length} 字符)`, meta);
-        logger.info('适配器', '文本生成完成，任务完成', meta);
+        logger.info('配接器', `已取得文本内容 (${textContent.length} 字元)`, meta);
+        logger.info('配接器', '文本生成完成，任务完成', meta);
 
         const trimmedThinking = thinkingContent.trim();
         const result = { text: textContent.trim() };
 
-        // 返回结果（如果有 thinking 则包含 reasoning）
+        // 回傳结果（如果有 thinking 则包含 reasoning）
         if (trimmedThinking) {
-            logger.info('适配器', `已获取思考过程 (${trimmedThinking.length} 字符)`, meta);
+            logger.info('配接器', `已取得思考过程 (${trimmedThinking.length} 字元)`, meta);
             result.reasoning = trimmedThinking;
         }
         return result;
 
     } catch (err) {
-        // 顶层错误处理
+        // 顶层錯誤处理
         const pageError = normalizePageError(err, meta);
         if (pageError) return pageError;
-        logger.error('适配器', '生成任务失败', { ...meta, error: err.message });
+        logger.error('配接器', '生成任务失败', { ...meta, error: err.message });
         return { error: `生成任务失败: ${err.message}` };
     } finally { }
 }
 
 /**
- * 适配器 manifest
+ * 配接器 manifest
  */
 export const manifest = {
     id: 'deepseek_text',
     displayName: 'DeepSeek (文本生成)',
-    description: '使用 DeepSeek 官网生成文本，支持 DeepThink 深度思考和 Search 搜索模式。需要已登录的 DeepSeek 账户。',
+    description: '使用 DeepSeek 官网生成文本，支援 DeepThink 深度思考和 Search 搜索模式。需要已登录的 DeepSeek 账户。',
 
     // 入口 URL
     getTargetUrl(config, workerConfig) {

@@ -3,7 +3,7 @@
  * @description 負責讀取/解析 `config.yaml`，並提供 API Key 生成能力（供腳本使用）。
  *
  * 約定：
- * - 該模組只負責"讀取 + 校驗 + 預設值補全"，不負責創建/寫入配置文件。
+ * - 該模組只負責「讀取 + 校驗 + 預設值補全」，不負責建立/寫入設定檔。
  * - 初始化/複製配置請使用 `config.example.yaml` + `scripts/config-init.js`。
  */
 
@@ -64,7 +64,7 @@ function resolveConfigPath() {
     return DATA_CONFIG_PATH;
   }
 
-  // 4. 都沒有，返回 data/config.yaml 路徑（後續會拋出錯誤）
+  // 4. 都沒有，回傳 data/config.yaml 路徑（後續會拋出錯誤）
   return DATA_CONFIG_PATH;
 }
 
@@ -80,9 +80,9 @@ export function getConfigPath() {
 }
 
 /**
- * 解析用户数据目录路径
- * @param {string|undefined} userDataMark - 用户数据标记
- * @returns {string} 完整的用户数据目录路径
+ * 解析用戶數據目錄路徑
+ * @param {string|undefined} userDataMark - 用戶數據標記
+ * @returns {string} 完整的用戶數據目錄路徑
  */
 function resolveUserDataDir(userDataMark) {
   const baseDir = path.join(process.cwd(), "data");
@@ -99,7 +99,7 @@ function resolveUserDataDir(userDataMark) {
  * @returns {object|null} 最終代理配置，null 表示直連
  */
 function resolveProxyConfig(globalProxy, instanceProxy) {
-  // Instance 級顯式禁用代理 -> 直連
+  // Instance 級顯式停用代理 -> 直連
   if (instanceProxy && instanceProxy.enable === false) {
     return null;
   }
@@ -218,46 +218,46 @@ function flattenInstancesToWorkers(instances, globalProxy) {
 }
 
 /**
- * 加载并校验配置（只读）
- * @returns {object} 配置对象
+ * 載入並校驗配置（唯讀）
+ * @returns {object} 配置物件
  */
 export function loadConfig() {
-  // 如果已有缓存，直接返回
+  // 如果已有快取，直接回傳
   if (cachedConfig) return cachedConfig;
 
-  // 解析配置文件路径（带优先级和自动复制逻辑）
+  // 解析配置檔案路徑（帶優先級和自動複製邏輯）
   const configPath = getConfigPath();
 
   if (!fs.existsSync(configPath)) {
     throw new Error(
-      `未找到配置文件: ${configPath}。请确保 data/config.yaml、config.yaml 或 config.example.yaml 存在。`,
+      `未找到配置檔案: ${configPath}。請確保 data/config.yaml、config.yaml 或 config.example.yaml 存在。`,
     );
   }
 
   const configFile = fs.readFileSync(configPath, "utf8");
   let config = yaml.parse(configFile);
   if (!config || typeof config !== "object") {
-    throw new Error(`配置文件解析失败: ${configPath}`);
+    throw new Error(`配置檔案解析失敗: ${configPath}`);
   }
 
-  // Docker 路径兼容处理
+  // Docker 路徑相容處理
   if (
     (!config.browser?.path || !fs.existsSync(config.browser.path)) &&
     fs.existsSync("/app/camoufox/camoufox")
   ) {
     logger.info(
       "配置器",
-      "检测到容器环境，自动修正浏览器路径为 /app/camoufox/camoufox",
+      "偵測到容器環境，自動修正瀏覽器路徑為 /app/camoufox/camoufox",
     );
     if (!config.browser) config.browser = {};
     config.browser.path = "/app/camoufox/camoufox";
   }
 
-  // 基础配置校验
+  // 基礎配置校驗
   if (!config.server || !config.server.port) {
-    throw new Error("配置文件缺少必需字段: server.port");
+    throw new Error("配置檔案缺少必需字段: server.port");
   }
-  // 端口类型和范围校验
+  // 埠類型與範圍校驗
   const port = config.server.port;
   if (
     typeof port !== "number" ||
@@ -265,31 +265,31 @@ export function loadConfig() {
     port < 1 ||
     port > 65535
   ) {
-    throw new Error(`server.port 必须是 1-65535 范围内的整数，当前值: ${port}`);
+    throw new Error(`server.port 必須是 1-65535 範圍內的整數，目前值: ${port}`);
   }
-  // Auth Token 校验：允许留空，但输出安全警告
+  // Auth Token 校驗：允許留空，但輸出安全警告
   if (!config.server.auth) {
     logger.warn(
       "配置器",
-      "server.auth 未配置！API 和 WebUI 将无需认证即可访问！",
+      "server.auth 未配置！API 和 WebUI 將無需認證即可存取！",
     );
     logger.warn(
       "配置器",
-      "请勿在公网环境中留空 auth，建议使用 npm run genkey 生成密钥",
+      "請勿在公網環境中留空 auth，建議使用 npm run genkey 生成金鑰",
     );
   } else if (config.server.auth === "sk-change-me-to-your-secure-key") {
-    logger.warn("配置器", "检测到默认密钥！请勿在公网环境中使用默认密钥");
+    logger.warn("配置器", "偵測到預設金鑰！請勿在公網環境中使用預設金鑰");
   } else if (
     typeof config.server.auth !== "string" ||
     config.server.auth.length < 10
   ) {
     logger.warn(
       "配置器",
-      "server.auth 长度少于 10 个字符，安全性较低，建议使用 npm run genkey 生成密钥",
+      "server.auth 長度少於 10 個字元，安全性較低，建議使用 npm run genkey 生成金鑰",
     );
   }
 
-  // 设置 keepalive 配置默认值
+  // 設定 keepalive 配置預設值
   if (!config.server.keepalive) {
     config.server.keepalive = { mode: "comment" };
   } else {
@@ -298,19 +298,19 @@ export function loadConfig() {
     if (!["comment", "content"].includes(config.server.keepalive.mode)) {
       logger.warn(
         "配置器",
-        `无效的 keepalive.mode: ${config.server.keepalive.mode}，使用默认值 comment`,
+        `無效的 keepalive.mode: ${config.server.keepalive.mode}，使用預設值 comment`,
       );
       config.server.keepalive.mode = "comment";
     }
   }
 
-  // 设置 browser 配置默认值
+  // 設定 browser 配置預設值
   if (!config.browser) config.browser = {};
   if (config.browser.humanizeCursor === undefined) {
     config.browser.humanizeCursor = true;
   }
 
-  // 设置 Pool 配置默认值
+  // 設定 Pool 配置預設值
   if (!config.backend) config.backend = {};
   if (!config.backend.pool) config.backend.pool = {};
 
@@ -324,12 +324,12 @@ export function loadConfig() {
   ) {
     logger.warn(
       "配置器",
-      `无效的 pool.strategy: ${config.backend.pool.strategy}，使用默认值 least_busy`,
+      `無效的 pool.strategy: ${config.backend.pool.strategy}，使用預設值 least_busy`,
     );
     config.backend.pool.strategy = "least_busy";
   }
 
-  // 故障转移配置默认值
+  // 故障轉移配置預設值
   if (!config.backend.pool.failover) {
     config.backend.pool.failover = {};
   }
@@ -346,24 +346,24 @@ export function loadConfig() {
     config.backend.pool.failover.imgDlRetryMaxRetries = 2;
   }
 
-  // 校验 instances 配置
+  // 校驗 instances 配置
   if (
     !config.backend.pool.instances ||
     !Array.isArray(config.backend.pool.instances)
   ) {
-    throw new Error("配置文件缺少必需字段: backend.pool.instances");
+    throw new Error("配置檔案缺少必需字段: backend.pool.instances");
   }
   if (config.backend.pool.instances.length === 0) {
-    throw new Error("backend.pool.instances 不能为空数组");
+    throw new Error("backend.pool.instances 不能為空陣列");
   }
 
-  // 展开 instances 为扁平化的 workers 数组
+  // 展開 instances 為扁平化的 workers 陣列
   config.backend.pool.workers = flattenInstancesToWorkers(
     config.backend.pool.instances,
     config.browser?.proxy,
   );
 
-  // 设置队列配置默认值
+  // 設定佇列配置預設值
   if (!config.queue) {
     config.queue = {
       queueBuffer: 2,
@@ -382,7 +382,7 @@ export function loadConfig() {
     config.backend.adapter = {};
   }
 
-  // 校验 gemini_biz 配置（如果有 Worker 使用）
+  // 校驗 gemini_biz 配置（如果有 Worker 使用）
   const hasGeminiBizWorker = config.backend.pool.workers.some(
     (w) =>
       w.type === "gemini_biz" ||
@@ -390,31 +390,31 @@ export function loadConfig() {
   );
   if (hasGeminiBizWorker && !config.backend.adapter.gemini_biz?.entryUrl) {
     throw new Error(
-      "存在 gemini_biz 类型的 Worker，但 backend.adapter.gemini_biz.entryUrl 未配置",
+      "存在 gemini_biz 類型的 Worker，但 backend.adapter.gemini_biz.entryUrl 未配置",
     );
   }
 
-  // 设置日志级别
+  // 設定日誌級別
   if (config.logLevel) {
     logger.setLevel(config.logLevel);
   }
 
-  // 日志输出
-  logger.debug("配置器", `已加载配置文件: ${configPath}`);
+  // 日誌輸出
+  logger.debug("配置器", `已載入配置檔案: ${configPath}`);
   logger.debug(
     "配置器",
     `Instances: ${config.backend.pool.instances.length}, Workers: ${config.backend.pool.workers.length}`,
   );
-  logger.debug("配置器", `调度策略: ${config.backend.pool.strategy}`);
+  logger.debug("配置器", `調度策略: ${config.backend.pool.strategy}`);
   logger.debug("配置器", `流式心跳模式: ${config.server.keepalive.mode}`);
 
-  // 缓存配置
+  // 快取配置
   cachedConfig = config;
   return config;
 }
 
-// 导出辅助函数供其他模块使用
+// 匯出輔助函式供其他模組使用
 export { resolveUserDataDir, resolveProxyConfig };
 
-// 默认导出为函数
+// 默認匯出為函式
 export default loadConfig;

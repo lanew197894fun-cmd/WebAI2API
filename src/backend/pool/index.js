@@ -1,5 +1,5 @@
 /**
- * @fileoverview Pool 模块聚合导出
+ * @fileoverview Pool 模組聚合导出
  */
 
 export { Worker } from './Worker.js';
